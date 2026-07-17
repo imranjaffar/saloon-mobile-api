@@ -7,12 +7,15 @@ import com.saloon.saloon_mobile_api.mapper.UserMapper;
 import com.saloon.saloon_mobile_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -27,51 +30,112 @@ public class UserServiceImpl
 
     private final UserMapper userMapper;
 
+
+
     @Override
-    public User create(User user){
+    public UserResponse createUser(User user) {
 
+        user.setPassword(encoder.encode(user.getPassword()));
 
-        user.setPassword(
-                encoder.encode(
-                        user.getPassword()
-                )
-        );
+        if (repo.findByName(user.getName()).isPresent()) {
+            throw new RuntimeException("User with this name already exists");
+        }
+        User savedUser=repo.save(user);
+        return userMapper.toResponse(savedUser);
+    }
 
+//    // 🔥 LOGIN
+//    @Override
+//    public User login(String username, String password) {
+//
+//        Optional<User> userOpt = repo.findByName(username);
+//
+//        if (userOpt.isPresent()) {
+//
+//            User user = userOpt.get();
+//
+//            if (encoder.matches(password, user.getPassword())) {
+//
+//                user.setLastLogin(LocalDateTime.now());
+//                repo.save(user);
+//
+//                return user;
+//            }
+//        }
+//
+//        return null;
+//    }
 
-        return repo.save(user);
-
+    // 🔥 GET ALL USERS
+    @Override
+    public List<UserResponse> getAllUsers() {
+        List<User> userList=repo.findAll();
+        return userList.stream().map(userMapper::toResponse).collect(Collectors.toList());
     }
 
 
 
     @Override
-    public List<User> getAll(){
+    public void enableUser(Long id) {
 
-        return repo.findAll();
+        User user = repo.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
 
+        user.setActive(true);
+
+        repo.save(user);
     }
 
+    @Override
+    public void disableUser(Long id) {
+
+        User user = repo.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        user.setActive(false);
+
+        repo.save(user);
+    }
 
 
     @Override
-    public User getById(Long id){
+    public String changePassword(String username, String oldPassword, String newPassword) {
 
-        return repo.findById(id)
-                .orElseThrow(
-                        ()->new RuntimeException("User not found")
-                );
+        User user = repo.findByName(username).orElse(null);
 
+        if (user == null) {
+            return "User not found";
+        }
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        // check old password
+        if (!encoder.matches(oldPassword, user.getPassword())) {
+            return "Old password is incorrect";
+        }
+
+        // update new password
+        user.setPassword(encoder.encode(newPassword));
+        repo.save(user);
+
+        return "Password changed successfully";
     }
-
-
 
     @Override
-    public void delete(Long id){
+    public UserResponse toggleStatus(Long id, boolean status) {
 
-        repo.deleteById(id);
+        User user = repo.findById(id).orElse(null);
 
+        if (user != null) {
+            user.setActive(status);
+            User savedUser=repo.save(user);
+            return userMapper.toResponse(savedUser);
+        }
+
+        return null;
     }
-
 
     @Override
     public List<UserResponse> getUsersWithoutEmployee() {

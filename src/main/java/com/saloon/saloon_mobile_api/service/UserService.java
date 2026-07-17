@@ -11,17 +11,21 @@ import java.util.List;
 public interface UserService {
 
 
-    User create(User user);
+    UserResponse createUser(User user);
 
+    // 🔥 LOGIN
+//    User login(String username, String password);
 
-    List<User> getAll();
+    // 🔥 GET ALL USERS
+    List<UserResponse> getAllUsers();
 
+    void enableUser(Long id);
 
-    User getById(Long id);
+    void disableUser(Long id);
 
+    String changePassword(String username, String oldPassword, String newPassword);
 
-    void delete(Long id);
-
+    UserResponse toggleStatus(Long id, boolean status);
 
     List<UserResponse> getUsersWithoutEmployee();
 }

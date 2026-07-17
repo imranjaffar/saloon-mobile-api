@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/attendances")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;

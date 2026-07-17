@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.controller;
 
 
 import com.saloon.saloon_mobile_api.dto.ServiceRequest;
+import com.saloon.saloon_mobile_api.dto.ServiceResponse;
 import com.saloon.saloon_mobile_api.entity.Services;
 import com.saloon.saloon_mobile_api.service.SaloonService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/services")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class SaloonServiceController {
 
 
@@ -32,7 +34,7 @@ public class SaloonServiceController {
 
 
     @PostMapping
-    public Services create(
+    public ServiceResponse create(
             @RequestBody ServiceRequest request){
 
         return service.create(request);
@@ -43,7 +45,7 @@ public class SaloonServiceController {
 
 
     @PutMapping("/{id}")
-    public Services update(
+    public ServiceResponse update(
             @PathVariable Long id,
             @RequestBody ServiceRequest request){
 
@@ -55,7 +57,7 @@ public class SaloonServiceController {
 
 
     @GetMapping
-    public List<Services> getAll(){
+    public List<ServiceResponse> getAll(){
 
         return service.getAll();
 
@@ -65,7 +67,7 @@ public class SaloonServiceController {
 
 
     @GetMapping("/{id}")
-    public Services get(
+    public ServiceResponse get(
             @PathVariable Long id){
 
         return service.getById(id);

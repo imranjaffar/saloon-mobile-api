@@ -10,6 +10,8 @@ import lombok.Data;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,17 +19,17 @@ import lombok.*;
 public class DashboardResponse {
 
     // TODAY
-    private double todayIncome;
-    private double todayExpense;
-    private double profit;
+    private BigDecimal todayIncome;
+    private BigDecimal todayExpense;
+    private BigDecimal profit;
 
     private long todayAppointments;
     private long completedAppointments;
     private long cancelledAppointments;
 
     // MONTH
-    private double monthlyIncome;
-    private double monthlyExpense;
+    private BigDecimal monthlyIncome;
+    private BigDecimal monthlyExpense;
 
     // BUSINESS KPIs
     private long totalCustomers;

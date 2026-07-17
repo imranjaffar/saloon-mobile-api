@@ -38,18 +38,11 @@ public interface ExpenseRepository
     WHERE e.createdAt >= :start
       AND e.createdAt < :end
     """)
-    double todayExpenseBetweenRange(LocalDateTime start,
+    BigDecimal totalExpenseBetweenRange(LocalDateTime start,
                         LocalDateTime end);
 
 
-    @Query("""
-    SELECT COALESCE(SUM(e.amount), 0)
-    FROM Expense e
-    WHERE e.createdAt >= :startOfMonth
-      AND e.createdAt < :startOfNextMonth
-    """)
-    double monthlyExpense(LocalDateTime startOfMonth,
-                          LocalDateTime startOfNextMonth);
+
 
     @Query("SELECT COALESCE(SUM(e.amount),0) FROM Expense e")
     BigDecimal totalExpense();

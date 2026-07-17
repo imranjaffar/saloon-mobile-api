@@ -10,7 +10,9 @@ import com.saloon.saloon_mobile_api.repository.IncomeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,34 +24,18 @@ public class ReportServiceImpl implements ReportService {
     private final AppointmentRepository appointmentRepo;
 
     @Override
-    public ReportResponse generate(LocalDate from, LocalDate to) {
+    public ReportResponse generate(LocalDateTime from, LocalDateTime to) {
 
         // =========================
         // INCOME FILTER
         // =========================
-        List<Income> incomes = incomeRepo.findAll();
-
-        double income = incomes.stream()
-                .filter(i -> {
-                    LocalDate date = i.getCreatedAt().toLocalDate();
-                    return (!date.isBefore(from) && !date.isAfter(to));
-                })
-                .mapToDouble(Income::getAmount)
-                .sum();
+        BigDecimal income = incomeRepo.totalIncome(from, to);
 
 
         // =========================
         // EXPENSE FILTER
         // =========================
-        List<Expense> expenses = expenseRepo.findAll();
-
-        double expense = expenses.stream()
-                .filter(e -> {
-                    LocalDate date = e.getExpenseDate().toLocalDate();
-                    return (!date.isBefore(from) && !date.isAfter(to));
-                })
-                .mapToDouble(Expense::getAmount)
-                .sum();
+        BigDecimal expense = expenseRepo.totalExpenseBetweenRange(from, to);
 
 
         // =========================
@@ -65,7 +51,7 @@ public class ReportServiceImpl implements ReportService {
         return ReportResponse.builder()
                 .income(income)
                 .expense(expense)
-                .profit(income - expense)
+                .profit(income.subtract(expense))
                 .appointments(appointments)
                 .build();
     }

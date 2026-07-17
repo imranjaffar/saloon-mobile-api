@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -52,5 +53,5 @@ public interface AppointmentRepository
     long countMonthlyAppointments();
 
 
-    long countByAppointmentDateBetween(LocalDate from, LocalDate to);
+    long countByAppointmentDateBetween(LocalDateTime from, LocalDateTime to);
 }

@@ -16,7 +16,10 @@ public class UserMapper {
         response.setEmail(user.getEmail());
         response.setMobile(user.getMobile());
         response.setRole(user.getRole().name());
-
+        response.setActive(user.isActive());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setUpdatedAt(user.getUpdatedAt());
+        response.setLastLogin(user.getLastLogin());
         return response;
     }
 }

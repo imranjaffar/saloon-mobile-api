@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/finance")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class FinanceController {
 
     private final FinanceService service;

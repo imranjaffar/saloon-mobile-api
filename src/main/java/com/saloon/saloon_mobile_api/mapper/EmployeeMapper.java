@@ -19,7 +19,7 @@ public class EmployeeMapper {
         response.setId(employee.getId());
 
         response.setDesignation(employee.getDesignation());
-        response.setSalary(BigDecimal.valueOf(employee.getSalary()));
+        response.setSalary(employee.getSalary());
         response.setAddress(employee.getAddress());
 
         if (user != null) {

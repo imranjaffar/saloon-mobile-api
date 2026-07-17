@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -36,18 +36,18 @@ public class DashboardServiceImpl implements DashboardService {
         LocalDateTime startOfMonth = today.withDayOfMonth(1).atStartOfDay();
         LocalDateTime startOfNextMonth = startOfMonth.plusMonths(1);
 
-        double todayIncome = incomeRepo.todayIncome(start,end);
-        double todayExpense = expenseRepo.todayExpenseBetweenRange(start,end);
+        BigDecimal todayIncome = incomeRepo.totalIncome(start,end);
+        BigDecimal todayExpense = expenseRepo.totalExpenseBetweenRange(start,end);
 
-        double monthlyIncome = incomeRepo.monthlyIncome(startOfMonth,startOfNextMonth);
-        double monthlyExpense = expenseRepo.monthlyExpense(startOfMonth,startOfNextMonth);
+        BigDecimal monthlyIncome = incomeRepo.totalIncome(startOfMonth,startOfNextMonth);
+        BigDecimal monthlyExpense = expenseRepo.totalExpenseBetweenRange(startOfMonth,startOfNextMonth);
 
         return DashboardResponse.builder()
 
                 // TODAY
                 .todayIncome(todayIncome)
                 .todayExpense(todayExpense)
-                .profit(todayIncome - todayExpense)
+                .profit(todayIncome .subtract(todayExpense))
 
                 .todayAppointments(
                         appointmentRepo.countByAppointmentDate(LocalDate.now())

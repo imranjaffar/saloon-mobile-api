@@ -5,7 +5,6 @@ import com.saloon.saloon_mobile_api.dto.AttendanceResponse;
 import com.saloon.saloon_mobile_api.entity.Attendance;
 import com.saloon.saloon_mobile_api.entity.AttendanceStatus;
 import com.saloon.saloon_mobile_api.entity.Employee;
-import com.saloon.saloon_mobile_api.mapper.AppointmentMapper;
 import com.saloon.saloon_mobile_api.mapper.AttendanceMapper;
 import com.saloon.saloon_mobile_api.repository.AttendanceRepository;
 import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 
@@ -52,7 +50,7 @@ public class AttendanceServiceImpl
 
         Attendance attendance =
                 attendanceRepository
-                        .findByEmployeeAndDate(
+                        .findByEmployeeAndAttendanceDate(
                                 employee,
                                 today
                         )
@@ -120,7 +118,7 @@ public class AttendanceServiceImpl
 
         Attendance attendance =
                 attendanceRepository
-                        .findByEmployeeAndDate(
+                        .findByEmployeeAndAttendanceDate(
                                 employee,
                                 LocalDate.now()
                         )
@@ -181,7 +179,7 @@ public class AttendanceServiceImpl
 
         Attendance attendance =
                 attendanceRepository
-                        .findByEmployeeAndDate(
+                        .findByEmployeeAndAttendanceDate(
                                 employee,
                                 request.getDate()
                         )
@@ -230,7 +228,7 @@ public class AttendanceServiceImpl
 
 
         return attendanceRepository
-                .findByDate(
+                .findByAttendanceDate(
                         LocalDate.now()
                 ).stream()
                 .map(mapper::toResponse)
@@ -272,7 +270,7 @@ public class AttendanceServiceImpl
 
 
         return attendanceRepository
-                .findByDate(date).stream()
+                .findByAttendanceDate(date).stream()
                 .map(mapper::toResponse)
                 .toList();
 

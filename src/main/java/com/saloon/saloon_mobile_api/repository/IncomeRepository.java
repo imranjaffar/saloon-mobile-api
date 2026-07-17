@@ -23,7 +23,7 @@ SELECT COALESCE(SUM(i.amount), 0)
 FROM Income i
 WHERE DATE(i.createdAt) BETWEEN :from AND :to
 """)
-    double totalIncome(LocalDate from, LocalDate to);
+    BigDecimal totalIncome(LocalDate from, LocalDate to);
 
 
 
@@ -34,17 +34,10 @@ FROM Income i
 WHERE i.createdAt >= :start
 AND i.createdAt < :end
 """)
-    double todayIncome(LocalDateTime start,
+    BigDecimal totalIncome(LocalDateTime start,
                        LocalDateTime end);
 
-    @Query("""
-    SELECT COALESCE(SUM(i.amount), 0)
-    FROM Income i
-    WHERE i.createdAt >= :startOfMonth
-      AND i.createdAt < :startOfNextMonth
-    """)
-    double monthlyIncome(LocalDateTime startOfMonth,
-                         LocalDateTime startOfNextMonth);
+
 
 
     @Query("SELECT COALESCE(SUM(i.amount),0) FROM Income i")
