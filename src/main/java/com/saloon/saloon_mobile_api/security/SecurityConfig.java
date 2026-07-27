@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,11 +32,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
 
-            "/auth/**",
-
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/auth/**"
     };
 
 
@@ -48,10 +45,10 @@ public class SecurityConfig {
 
             "/finance/**",
             "/reports/**",
-
             "/inventory/**",
             "/expenses/**",
             "/income/**"
+
 
     };
 
@@ -64,7 +61,7 @@ public class SecurityConfig {
             "/appointments/**",
             "/services/**",
 
-            "/attendance/**",
+            "/attendances/**",
 
             "/dashboard/**"
 
@@ -72,140 +69,62 @@ public class SecurityConfig {
 
 
 
+
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.csrf(csrf -> csrf.disable());
+
+        http.sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        );
+
+        http.authorizeHttpRequests(auth -> auth
+
+                .requestMatchers(PUBLIC_ENDPOINTS)
+                .permitAll()
+
+                // DELETE only owner
 
 
-        return http
+                .requestMatchers(
+                        HttpMethod.DELETE,
+                        "/appointments/**",
+                        "/customers/**",
+                        "/employees/**",
+                        "/inventory/**"
+                ).hasAuthority(OWNER)
+
+                // Owner modules
+                .requestMatchers(
+                        OWNER_ENDPOINTS
+                )
+                .hasAuthority(OWNER)
 
 
-                .csrf(AbstractHttpConfigurer::disable)
-
-
-                .cors(cors ->
-                        cors.configurationSource(
-                                corsConfigurationSource()
-                        )
+                // Owner + Employee modules
+                .requestMatchers(
+                        OWNER_EMPLOYEE_ENDPOINTS
+                )
+                .hasAnyAuthority(
+                        OWNER,
+                        EMPLOYEE
                 )
 
+                .anyRequest().authenticated()
+        );
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
+        http.addFilterBefore(jwtFilter,
+                UsernamePasswordAuthenticationFilter.class);
 
-
-                .authorizeHttpRequests(auth -> auth
-
-
-                        // Public
-                        .requestMatchers(PUBLIC_ENDPOINTS)
-                        .permitAll()
-
-
-
-                        // DELETE only owner
-                        .requestMatchers(
-                                "/appointments/**/delete",
-                                "/customers/**/delete",
-                                "/employees/**/delete",
-                                "/inventory/**/delete"
-                        )
-                        .hasAuthority(OWNER)
-
-
-
-                        // Owner modules
-                        .requestMatchers(
-                                OWNER_ENDPOINTS
-                        )
-                        .hasAuthority(OWNER)
-
-
-
-                        // Owner + Employee modules
-                        .requestMatchers(
-                                OWNER_EMPLOYEE_ENDPOINTS
-                        )
-                        .hasAnyAuthority(
-                                OWNER,
-                                EMPLOYEE
-                        )
-
-
-                        .anyRequest()
-                        .authenticated()
-
-                )
-
-
-                .addFilterBefore(
-                        jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                )
-
-
-                .build();
-
+        return http.build();
     }
-
-
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration
+            AuthenticationConfiguration config
     ) throws Exception {
-
-        return configuration.getAuthenticationManager();
-
-    }
-
-
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-
-
-        CorsConfiguration configuration =
-                new CorsConfiguration();
-
-
-        configuration.setAllowedOrigins(
-                List.of("*")
-        );
-
-
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "PATCH",
-                        "OPTIONS"
-                )
-        );
-
-
-        configuration.setAllowedHeaders(
-                List.of("*")
-        );
-
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
-
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
-
-
-        return source;
+        return config.getAuthenticationManager();
     }
 
 }

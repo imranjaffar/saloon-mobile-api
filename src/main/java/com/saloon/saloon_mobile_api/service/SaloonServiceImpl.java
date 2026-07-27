@@ -22,7 +22,7 @@ public class SaloonServiceImpl
 
     private final SalonServiceRepository repository;
 
-    private ServiceMapper serviceMapper;
+    private final ServiceMapper serviceMapper;
 
 
     @Override
@@ -30,6 +30,7 @@ public class SaloonServiceImpl
 
         Services service = Services.builder()
                 .name(request.getName())
+                .active(true)
                 .description(request.getDescription())
                 .durationMinutes(request.getDurationMinutes())
                 .price(request.getPrice())

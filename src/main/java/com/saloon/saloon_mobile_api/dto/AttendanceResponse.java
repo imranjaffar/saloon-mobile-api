@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,6 +17,8 @@ public class AttendanceResponse {
 
     private Long employeeId;
     private String employeeName;
+
+    private LocalDate attendanceDate;
 
     private LocalDateTime checkIn;
     private LocalDateTime checkOut;

@@ -1,85 +1,85 @@
 package com.saloon.saloon_mobile_api.controller;
 
-
-import com.saloon.saloon_mobile_api.dto.InventoryRequest;
-import com.saloon.saloon_mobile_api.entity.InventoryItem;
+import com.saloon.saloon_mobile_api.dto.CreateInventoryRequest;
+import com.saloon.saloon_mobile_api.dto.InventoryResponse;
+import com.saloon.saloon_mobile_api.dto.UpdateInventoryRequest;
 import com.saloon.saloon_mobile_api.service.InventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
-
 @RestController
 @RequestMapping("/inventory")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class InventoryController {
 
-
-
-    private final InventoryService service;
-
-
+    private final InventoryService inventoryService;
 
 
     @PostMapping
-    public InventoryItem add(
-            @RequestBody InventoryRequest request){
+    public ResponseEntity<InventoryResponse> create(
+            @Valid @RequestBody CreateInventoryRequest request) {
 
-        return service.add(request);
+        InventoryResponse response =
+                inventoryService.create(request);
 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
-
-
-
 
 
     @GetMapping
-    public List<InventoryItem> all(){
+    public ResponseEntity<List<InventoryResponse>> getAll() {
 
-        return service.getAll();
-
+        return ResponseEntity.ok(
+                inventoryService.getAll()
+        );
     }
 
 
+    @GetMapping("/{id}")
+    public ResponseEntity<InventoryResponse> getById(
+            @PathVariable Long id) throws Exception {
 
+        return ResponseEntity.ok(
+                inventoryService.getById(id)
+        );
+    }
 
 
     @GetMapping("/low-stock")
-    public List<InventoryItem> low(){
+    public ResponseEntity<List<InventoryResponse>> lowStock() {
 
-        return service.lowStock();
-
+        return ResponseEntity.ok(
+                inventoryService.getLowStock()
+        );
     }
-
-
-
 
 
     @PutMapping("/{id}")
-    public InventoryItem update(
+    public ResponseEntity<InventoryResponse> update(
             @PathVariable Long id,
-            @RequestBody InventoryRequest request){
+            @Valid @RequestBody UpdateInventoryRequest request) throws Exception {
 
-        return service.update(id,request);
 
+        return ResponseEntity.ok(
+                inventoryService.update(id, request)
+        );
     }
-
-
-
 
 
     @DeleteMapping("/{id}")
-    public String delete(
-            @PathVariable Long id){
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id) throws Exception {
 
-        service.delete(id);
 
-        return "Deleted";
+        inventoryService.delete(id);
 
+        return ResponseEntity.noContent().build();
     }
-
-
 }

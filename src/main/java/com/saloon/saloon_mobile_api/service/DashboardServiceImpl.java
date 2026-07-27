@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.service;
 
 
 import com.saloon.saloon_mobile_api.dto.DashboardResponse;
+import com.saloon.saloon_mobile_api.entity.AppointmentStatus;
 import com.saloon.saloon_mobile_api.repository.*;
 import lombok.RequiredArgsConstructor;
 
@@ -55,12 +56,12 @@ public class DashboardServiceImpl implements DashboardService {
 
                 .completedAppointments(
                         appointmentRepo.countByAppointmentDateAndStatus(
-                                LocalDate.now(), "COMPLETED"
+                                LocalDate.now(), AppointmentStatus.COMPLETED
                         )
                 )
 
                 .cancelledAppointments(
-                        appointmentRepo.countByStatus("CANCELLED")
+                        appointmentRepo.countByStatus(AppointmentStatus.CANCELLED)
                 )
 
                 // MONTH

@@ -18,7 +18,6 @@ public class AuthController {
 
     private final UserRepository repo;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody User request) {
@@ -41,7 +40,7 @@ public class AuthController {
             return response;
         }
 
-        String token = jwtUtil.generateToken(
+        String token = JwtUtil.generateToken(
                 user.getName(),
                 user.getRole().name()
         );

@@ -15,4 +15,7 @@ public interface EmployeeRepository
     Optional<Employee> findById(Long employeeId);
 
     boolean existsByUser(User user);
+
+    Optional<Employee> findByUser(User user);
+
 }

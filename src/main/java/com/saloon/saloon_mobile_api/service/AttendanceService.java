@@ -11,7 +11,13 @@ import java.util.List;
 
 public interface AttendanceService {
 
+    AttendanceResponse checkOut(String userName);
+
+    List<AttendanceResponse> getMyAttendance(String username);
+
     AttendanceResponse checkIn(Long employeeId);
+
+    AttendanceResponse checkIn(String userName);
 
     AttendanceResponse checkOut(Long employeeId);
 

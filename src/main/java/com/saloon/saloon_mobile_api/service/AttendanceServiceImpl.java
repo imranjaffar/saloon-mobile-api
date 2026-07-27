@@ -5,9 +5,11 @@ import com.saloon.saloon_mobile_api.dto.AttendanceResponse;
 import com.saloon.saloon_mobile_api.entity.Attendance;
 import com.saloon.saloon_mobile_api.entity.AttendanceStatus;
 import com.saloon.saloon_mobile_api.entity.Employee;
+import com.saloon.saloon_mobile_api.entity.User;
 import com.saloon.saloon_mobile_api.mapper.AttendanceMapper;
 import com.saloon.saloon_mobile_api.repository.AttendanceRepository;
 import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
+import com.saloon.saloon_mobile_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,13 +31,97 @@ public class AttendanceServiceImpl
 
     private final AttendanceMapper mapper;
 
+    private final UserRepository userRepo;
+
+
+    @Override
+    public AttendanceResponse checkOut(String userName) {
+
+        User user = userRepo.findByName(userName)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() ->
+                        new RuntimeException("Employee not found"));
+
+        Attendance attendance = attendanceRepository
+                .findByEmployeeAndAttendanceDate(
+                        employee,
+                        LocalDate.now()
+                )
+                .orElseThrow(() ->
+                        new RuntimeException("Please check in first."));
+
+        if (attendance.getCheckOut() != null) {
+            throw new RuntimeException("Already checked out");
+        }
+
+        attendance.setCheckOut(LocalDateTime.now());
+
+        Attendance saved = attendanceRepository.save(attendance);
+
+        return mapper.toResponse(saved);
+    }
+
+    @Override
+    public List<AttendanceResponse> getMyAttendance(String username) {
+
+        User user = userRepo.findByName(username)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() ->
+                        new RuntimeException("Employee not found"));
+
+        return attendanceRepository
+                .findByEmployeeOrderByAttendanceDateDesc(employee)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
 
     @Override
     public AttendanceResponse checkIn(Long employeeId) {
 
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() ->
+                        new RuntimeException("Employee not found"));
+
+        LocalDate today = LocalDate.now();
+
+        Attendance attendance = attendanceRepository
+                .findByEmployeeAndAttendanceDate(employee, today)
+                .orElse(null);
+
+        if (attendance != null && attendance.getCheckIn() != null) {
+            throw new RuntimeException("Already checked in");
+        }
+
+        if (attendance == null) {
+            attendance = new Attendance();
+            attendance.setEmployee(employee);
+            attendance.setAttendanceDate(today);
+        }
+
+        attendance.setCheckIn(LocalDateTime.now());
+        attendance.setStatus(AttendanceStatus.PRESENT);
+
+        return mapper.toResponse(attendanceRepository.save(attendance));
+    }
+
+    @Override
+    public AttendanceResponse checkIn(String userName) {
+
+        User user = userRepo
+                .findByName(userName)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("User not found"));
 
         Employee employee =
-                employeeRepository.findById(employeeId)
+                employeeRepository.findByUser(user)
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Employee not found"

@@ -1,37 +1,24 @@
 package com.saloon.saloon_mobile_api.service;
 
-
-
-
-import com.saloon.saloon_mobile_api.dto.InventoryRequest;
-import com.saloon.saloon_mobile_api.entity.InventoryItem;
+import com.saloon.saloon_mobile_api.dto.CreateInventoryRequest;
+import com.saloon.saloon_mobile_api.dto.InventoryResponse;
+import com.saloon.saloon_mobile_api.dto.UpdateInventoryRequest;
 
 import java.util.List;
 
-
-
 public interface InventoryService {
 
+    InventoryResponse create(CreateInventoryRequest request);
 
-    InventoryItem add(
-            InventoryRequest request
-    );
+    InventoryResponse update(Long id,
+                             UpdateInventoryRequest request) throws Exception;
 
+    InventoryResponse getById(Long id) throws Exception;
 
-    InventoryItem update(
-            Long id,
-            InventoryRequest request
-    );
+    List<InventoryResponse> getAll();
 
+    List<InventoryResponse> getLowStock();
 
-    List<InventoryItem> getAll();
-
-
-    List<InventoryItem> lowStock();
-
-
-    void delete(Long id);
-
-
+    void delete(Long id) throws Exception;
 
 }

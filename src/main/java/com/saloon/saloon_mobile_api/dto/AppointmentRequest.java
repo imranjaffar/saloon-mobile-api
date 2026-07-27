@@ -11,6 +11,8 @@ import java.time.LocalTime;
 @Data
 public class AppointmentRequest {
 
+    // Existing customer
+    private Long customerId;
 
     private String customerName;
 

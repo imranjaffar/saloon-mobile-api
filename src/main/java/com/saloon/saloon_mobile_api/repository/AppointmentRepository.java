@@ -45,9 +45,9 @@ public interface AppointmentRepository
 
 
 
-    long countByAppointmentDateAndStatus(LocalDate date, String status);
+    long countByAppointmentDateAndStatus(LocalDate date, AppointmentStatus status);
 
-    long countByStatus(String status);
+    long countByStatus(AppointmentStatus status);
 
     @Query("SELECT COUNT(a) FROM Appointment a WHERE MONTH(a.appointmentDate) = MONTH(CURRENT_DATE) AND YEAR(a.appointmentDate) = YEAR(CURRENT_DATE)")
     long countMonthlyAppointments();

@@ -7,8 +7,10 @@ import com.saloon.saloon_mobile_api.dto.ExpenseRequest;
 import com.saloon.saloon_mobile_api.dto.ExpenseResponse;
 import com.saloon.saloon_mobile_api.dto.IncomeRequest;
 import com.saloon.saloon_mobile_api.dto.IncomeResponse;
+import com.saloon.saloon_mobile_api.entity.Appointment;
 import com.saloon.saloon_mobile_api.entity.Expense;
 import com.saloon.saloon_mobile_api.entity.Income;
+import com.saloon.saloon_mobile_api.entity.IncomeSource;
 import com.saloon.saloon_mobile_api.mapper.ExpenseMapper;
 import com.saloon.saloon_mobile_api.mapper.IncomeMapper;
 import com.saloon.saloon_mobile_api.repository.ExpenseRepository;
@@ -19,8 +21,8 @@ import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -126,6 +128,27 @@ public class FinanceServiceImpl
         return totalIncome().subtract(totalExpense());
     }
 
+    @Override
+    public void createAppointmentIncome(Appointment appointment) {
 
+        Income income = new Income();
+
+//        income.setAmount(appointment.getTotalAmount());
+
+        income.setCreatedAt(LocalDateTime.now());
+
+        income.setDescription(
+                "Appointment #" +
+                        appointment.getId() +
+                        " - " +
+                        appointment.getCustomerName()
+        );
+
+        income.setSource(IncomeSource.APPOINTMENT);
+
+        income.setReferenceId(appointment.getId());
+
+        incomeRepo.save(income);
+    }
 
 }

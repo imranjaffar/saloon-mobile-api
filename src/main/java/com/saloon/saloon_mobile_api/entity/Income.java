@@ -45,7 +45,9 @@ public class Income extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;
 
+    private IncomeSource source;
 
+    private Long referenceId;
 
 
 

@@ -1,5 +1,6 @@
 package com.saloon.saloon_mobile_api.controller;
 
+import com.saloon.saloon_mobile_api.dto.CustomerResponse;
 import com.saloon.saloon_mobile_api.service.CustomerService;
 import lombok.*;
 
@@ -24,7 +25,7 @@ public class CustomerController {
 
 
     @PostMapping
-    public Customer create(
+    public CustomerResponse create(
             @RequestBody Customer c
     ){
 
@@ -35,7 +36,7 @@ public class CustomerController {
 
 
     @GetMapping
-    public List<Customer> all(){
+    public List<CustomerResponse> all(){
 
         return service.getAll();
 
@@ -44,7 +45,7 @@ public class CustomerController {
 
 
     @GetMapping("/{id}")
-    public Customer get(
+    public CustomerResponse get(
             @PathVariable Long id
     ){
 
@@ -55,7 +56,7 @@ public class CustomerController {
 
 
     @PutMapping("/{id}")
-    public Customer update(
+    public CustomerResponse update(
             @PathVariable Long id,
             @RequestBody Customer c
     ){

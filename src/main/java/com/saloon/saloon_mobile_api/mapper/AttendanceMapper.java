@@ -25,7 +25,7 @@ public class AttendanceMapper {
                                 ? attendance.getEmployee().getUser().getName()
                                 : null
                 )
-
+                .attendanceDate(attendance.getAttendanceDate())
                 .checkIn(attendance.getCheckIn())
                 .checkOut(attendance.getCheckOut())
                 .status(attendance.getStatus() != null

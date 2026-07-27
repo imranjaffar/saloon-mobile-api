@@ -4,32 +4,31 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
-@Component
 public class JwtUtil {
 
+    // 🔥 Secret Key (must be 32+ chars)
     private static final String SECRET =
             "mysecretkeymysecretkeymysecretkey123456";
 
+    // 🔥 Token Expiration (10 hours)
     private static final long EXPIRATION =
-            1000L * 60 * 60 * 10;
+            1000 * 60 * 60 * 10;
 
-    private SecretKey key;
+    // 🔥 Signing Key
+    private static final Key key =
+            Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    @PostConstruct
-    public void init() {
-        key = Keys.hmacShaKeyFor(
-                SECRET.getBytes(StandardCharsets.UTF_8)
-        );
-    }
-
-    public String generateToken(String username, String role) {
+    // =========================================
+    // 🔐 Generate JWT Token
+    // =========================================
+    public static String generateToken(
+            String username,
+            String role
+    ) {
 
         return Jwts.builder()
 
@@ -40,15 +39,48 @@ public class JwtUtil {
                 .setIssuedAt(new Date())
 
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + EXPIRATION)
+                        new Date(
+                                System.currentTimeMillis()
+                                        + EXPIRATION
+                        )
                 )
 
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(
+                        key,
+                        SignatureAlgorithm.HS256
+                )
 
                 .compact();
     }
 
-    public Claims extractAllClaims(String token) {
+    // =========================================
+    // 👤 Extract Username
+    // =========================================
+    public static String extractUsername(
+            String token
+    ) {
+
+        return extractAllClaims(token)
+                .getSubject();
+    }
+
+    // =========================================
+    // 👮 Extract Role
+    // =========================================
+    public static String extractRole(
+            String token
+    ) {
+
+        return extractAllClaims(token)
+                .get("role", String.class);
+    }
+
+    // =========================================
+    // 📦 Extract All Claims
+    // =========================================
+    public static Claims extractAllClaims(
+            String token
+    ) {
 
         return Jwts.parserBuilder()
 
@@ -61,18 +93,12 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public String extractUsername(String token) {
-
-        return extractAllClaims(token).getSubject();
-    }
-
-    public String extractRole(String token) {
-
-        return extractAllClaims(token)
-                .get("role", String.class);
-    }
-
-    public boolean validate(String token) {
+    // =========================================
+    // ✅ Validate Token
+    // =========================================
+    public static boolean validate(
+            String token
+    ) {
 
         try {
 
@@ -86,7 +112,10 @@ public class JwtUtil {
         }
     }
 
-    public SecretKey getKey() {
+    // =========================================
+    // 🔑 Get Signing Key
+    // =========================================
+    public static Key getKey() {
         return key;
     }
 }

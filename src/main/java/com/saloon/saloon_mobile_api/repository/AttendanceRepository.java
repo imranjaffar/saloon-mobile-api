@@ -20,6 +20,11 @@ public interface AttendanceRepository
 
     List<Attendance> findByAttendanceDate(LocalDate date);
 
+    List<Attendance> findByEmployeeOrderByAttendanceDateDesc(
+            Employee employee);
+
+
+
 
 
 

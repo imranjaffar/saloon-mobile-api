@@ -4,17 +4,16 @@ package com.saloon.saloon_mobile_api.service;
 
 import com.saloon.saloon_mobile_api.dto.AppointmentRequest;
 import com.saloon.saloon_mobile_api.dto.AppointmentResponse;
-import com.saloon.saloon_mobile_api.entity.Appointment;
-import com.saloon.saloon_mobile_api.entity.AppointmentStatus;
-import com.saloon.saloon_mobile_api.entity.Employee;
-import com.saloon.saloon_mobile_api.entity.Services;
+import com.saloon.saloon_mobile_api.entity.*;
 import com.saloon.saloon_mobile_api.mapper.AppointmentMapper;
 import com.saloon.saloon_mobile_api.repository.AppointmentRepository;
+import com.saloon.saloon_mobile_api.repository.CustomerRepository;
 import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
 import com.saloon.saloon_mobile_api.repository.SalonServiceRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -40,9 +39,16 @@ public class AppointmentServiceImpl
     private final AppointmentMapper mapper;
 
 
+    private final CustomerRepository customerRepository;
+
+    private final FinanceService financeService;
+
 
     @Override
     public AppointmentResponse create(AppointmentRequest request) {
+
+        Customer customer=null;
+        validateAndCreateCustomer(request);
 
         Employee employee = employeeRepo.findById(request.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
@@ -69,10 +75,35 @@ public class AppointmentServiceImpl
 
     }
 
+    private void validateAndCreateCustomer(AppointmentRequest request) {
+        Customer customer;
+        if (request.getCustomerId() != null) {
 
+            customer = customerRepository.findById(request.getCustomerId())
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Customer not found."));
+
+        } else {
+
+            if (request.getCustomerName() == null || request.getCustomerName().isBlank()) {
+                throw new IllegalArgumentException("Customer name is required.");
+            }
+
+            if (request.getCustomerPhone() == null || request.getCustomerPhone().isBlank()) {
+                throw new IllegalArgumentException("Customer phone is required.");
+            }
+
+            customer = new Customer();
+            customer.setName(request.getCustomerName().trim());
+            customer.setMobile(request.getCustomerPhone().trim());
+
+            customer = customerRepository.save(customer);
+        }
+    }
 
 
     @Override
+    @Transactional
     public AppointmentResponse updateStatus(Long id, String status) {
 
         Appointment appointment = appointmentRepo.findById(id)
@@ -86,6 +117,10 @@ public class AppointmentServiceImpl
 
 
         Appointment updated = appointmentRepo.save(appointment);
+
+        //create income entry
+        financeService.createAppointmentIncome(appointment);
+
 
         return mapper.toResponse(updated);
     }

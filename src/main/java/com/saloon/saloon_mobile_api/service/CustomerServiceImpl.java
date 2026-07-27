@@ -5,7 +5,9 @@ package com.saloon.saloon_mobile_api.service;
 
 
 
+import com.saloon.saloon_mobile_api.dto.CustomerResponse;
 import com.saloon.saloon_mobile_api.entity.Customer;
+import com.saloon.saloon_mobile_api.mapper.CustomerMapper;
 import com.saloon.saloon_mobile_api.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -26,47 +28,58 @@ public class CustomerServiceImpl
     private final CustomerRepository repo;
 
 
+    private final CustomerMapper customerMapper;
+
+
+
 
     @Override
-    public Customer create(
+    public CustomerResponse create(
             Customer customer
     ){
 
-        return repo.save(customer);
+        Customer savedCustomer= repo.save(customer);
+
+        return customerMapper.toResponse(savedCustomer);
 
     }
 
 
 
     @Override
-    public List<Customer> getAll(){
+    public List<CustomerResponse> getAll(){
 
-        return repo.findAll();
+        List<Customer> customerList= repo.findAll();
+
+       return customerMapper.toResponseList(customerList);
 
     }
 
 
 
     @Override
-    public Customer get(Long id){
+    public CustomerResponse get(Long id){
 
-        return repo.findById(id)
+        Customer customerDetail= repo.findById(id)
                 .orElseThrow(
                         ()->new RuntimeException("Customer not found")
                 );
 
+      return  customerMapper.toResponse(customerDetail);
+
     }
 
 
 
     @Override
-    public Customer update(
+    public CustomerResponse update(
             Long id,
             Customer data
     ){
 
 
-        Customer old=get(id);
+        Customer old=repo.findById(id).orElseThrow(() ->
+                new RuntimeException("Customer not found"));;
 
 
         old.setName(data.getName());
@@ -80,7 +93,9 @@ public class CustomerServiceImpl
         old.setNotes(data.getNotes());
 
 
-        return repo.save(old);
+        Customer updatedCustomer= repo.save(old);
+
+        return customerMapper.toResponse(updatedCustomer);
 
     }
 

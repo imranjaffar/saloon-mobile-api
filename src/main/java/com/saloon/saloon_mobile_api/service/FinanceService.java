@@ -7,6 +7,7 @@ import com.saloon.saloon_mobile_api.dto.ExpenseRequest;
 import com.saloon.saloon_mobile_api.dto.ExpenseResponse;
 import com.saloon.saloon_mobile_api.dto.IncomeRequest;
 import com.saloon.saloon_mobile_api.dto.IncomeResponse;
+import com.saloon.saloon_mobile_api.entity.Appointment;
 import com.saloon.saloon_mobile_api.entity.Expense;
 import com.saloon.saloon_mobile_api.entity.Income;
 
@@ -50,5 +51,5 @@ public interface FinanceService {
     BigDecimal profit();
 
 
-
+    void createAppointmentIncome(Appointment appointment);
 }

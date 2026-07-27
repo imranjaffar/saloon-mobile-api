@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.service;
 
 
 
+import com.saloon.saloon_mobile_api.dto.CustomerResponse;
 import com.saloon.saloon_mobile_api.entity.Customer;
 
 import java.util.List;
@@ -11,16 +12,16 @@ import java.util.List;
 public interface CustomerService {
 
 
-    Customer create(Customer customer);
+    CustomerResponse create(Customer customer);
 
 
-    List<Customer> getAll();
+    List<CustomerResponse> getAll();
 
 
-    Customer get(Long id);
+    CustomerResponse get(Long id);
 
 
-    Customer update(
+    CustomerResponse update(
             Long id,
             Customer customer
     );
