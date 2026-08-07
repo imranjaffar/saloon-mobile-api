@@ -1,7 +1,7 @@
 package com.saloon.saloon_mobile_api.utility;
 
 import com.saloon.saloon_mobile_api.entity.Reminder;
-import com.saloon.saloon_mobile_api.enums.ReminderStatus;
+import com.saloon.saloon_mobile_api.entity.ReminderStatus;
 import com.saloon.saloon_mobile_api.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
