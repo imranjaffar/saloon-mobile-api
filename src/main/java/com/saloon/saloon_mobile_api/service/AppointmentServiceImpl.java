@@ -1,167 +1,214 @@
-package com.saloon.saloon_mobile_api.service;
+    package com.saloon.saloon_mobile_api.service;
 
 
 
-import com.saloon.saloon_mobile_api.dto.AppointmentRequest;
-import com.saloon.saloon_mobile_api.dto.AppointmentResponse;
-import com.saloon.saloon_mobile_api.entity.*;
-import com.saloon.saloon_mobile_api.mapper.AppointmentMapper;
-import com.saloon.saloon_mobile_api.repository.AppointmentRepository;
-import com.saloon.saloon_mobile_api.repository.CustomerRepository;
-import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
-import com.saloon.saloon_mobile_api.repository.SalonServiceRepository;
-import lombok.RequiredArgsConstructor;
+    import com.saloon.saloon_mobile_api.dto.AppointmentRequest;
+    import com.saloon.saloon_mobile_api.dto.AppointmentResponse;
+    import com.saloon.saloon_mobile_api.entity.*;
+    import com.saloon.saloon_mobile_api.mapper.AppointmentMapper;
+    import com.saloon.saloon_mobile_api.repository.*;
+    import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+    import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.List;
-
-
-
-@Service
-@RequiredArgsConstructor
-public class AppointmentServiceImpl
-        implements AppointmentService {
+    import java.math.BigDecimal;
+    import java.util.ArrayList;
+    import java.util.List;
 
 
 
-    private final AppointmentRepository appointmentRepo;
+    @Service
+    @RequiredArgsConstructor
+    public class AppointmentServiceImpl
+            implements AppointmentService {
 
 
-    private final EmployeeRepository employeeRepo;
+
+        private final AppointmentRepository appointmentRepo;
 
 
-    private final SalonServiceRepository serviceRepo;
+        private final EmployeeRepository employeeRepo;
 
 
-    private final AppointmentMapper mapper;
+        private final SalonServiceRepository serviceRepo;
 
 
-    private final CustomerRepository customerRepository;
-
-    private final FinanceService financeService;
+        private final AppointmentMapper mapper;
 
 
-    @Override
-    public AppointmentResponse create(AppointmentRequest request) {
+        private final CustomerRepository customerRepository;
 
-        Customer customer=null;
-        validateAndCreateCustomer(request);
+        private final FinanceService financeService;
 
-        Employee employee = employeeRepo.findById(request.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        Services service = serviceRepo.findById(request.getServiceId())
-                .orElseThrow(() -> new RuntimeException("Service not found"));
-
-        Appointment appointment = Appointment.builder()
-                .customerName(request.getCustomerName())
-                .customerPhone(request.getCustomerPhone())
-                .employee(employee)
-                .services(service)
-                .appointmentDate(request.getDate())
-                .appointmentTime(request.getTime())
-                .notes(request.getNotes())
-                .status(AppointmentStatus.BOOKED)
-                .build();
+        private final ReminderRepository reminderRepository;
 
 
-        Appointment saved = appointmentRepo.save(appointment);
+        @Override
+        public AppointmentResponse create(AppointmentRequest request) {
 
-        return mapper.toResponse(saved);
+            Customer customer = validateAndCreateCustomer(request);
 
+            Employee employee = employeeRepo.findById(request.getEmployeeId())
+                    .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-    }
+            Appointment appointment = Appointment.builder()
+                    .customer(customer)
+                    .employee(employee)
+                    .appointmentDate(request.getDate())
+                    .appointmentTime(request.getTime())
+                    .notes(request.getNotes())
+                    .status(AppointmentStatus.BOOKED)
+                    .build();
 
-    private void validateAndCreateCustomer(AppointmentRequest request) {
-        Customer customer;
-        if (request.getCustomerId() != null) {
+            BigDecimal totalAmount = BigDecimal.ZERO;
 
-            customer = customerRepository.findById(request.getCustomerId())
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("Customer not found."));
+            List<AppointmentSaloonService> appointmentServices = new ArrayList<>();
 
-        } else {
+            for (Long serviceId : request.getServiceIds()) {
 
-            if (request.getCustomerName() == null || request.getCustomerName().isBlank()) {
-                throw new IllegalArgumentException("Customer name is required.");
+                Services service = serviceRepo.findById(serviceId)
+                        .orElseThrow(() -> new RuntimeException("Service not found"));
+
+                AppointmentSaloonService appointmentService =
+                        AppointmentSaloonService.builder()
+                                .appointment(appointment)
+                                .service(service)
+                                .price(service.getPrice())
+                                .build();
+
+                appointmentServices.add(appointmentService);
+
+                totalAmount = totalAmount.add(service.getPrice());
             }
 
-            if (request.getCustomerPhone() == null || request.getCustomerPhone().isBlank()) {
-                throw new IllegalArgumentException("Customer phone is required.");
+            appointment.setServices(appointmentServices);
+            appointment.setTotalAmount(totalAmount);
+
+            Appointment saved = appointmentRepo.save(appointment);
+
+            return mapper.toResponse(saved);
+        }
+
+        private Customer validateAndCreateCustomer(AppointmentRequest request) {
+
+            Customer customer;
+
+            if (request.getCustomerId() != null) {
+
+                customer = customerRepository.findById(request.getCustomerId())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Customer not found."));
+
+            } else {
+
+                if (request.getCustomerName() == null ||
+                        request.getCustomerName().isBlank()) {
+
+                    throw new IllegalArgumentException("Customer name is required.");
+                }
+
+                if (request.getCustomerPhone() == null ||
+                        request.getCustomerPhone().isBlank()) {
+
+                    throw new IllegalArgumentException("Customer phone is required.");
+                }
+
+                customer = new Customer();
+                customer.setName(request.getCustomerName().trim());
+                customer.setMobile(request.getCustomerPhone().trim());
+
+                customer = customerRepository.save(customer);
             }
 
-            customer = new Customer();
-            customer.setName(request.getCustomerName().trim());
-            customer.setMobile(request.getCustomerPhone().trim());
-
-            customer = customerRepository.save(customer);
-        }
-    }
-
-
-    @Override
-    @Transactional
-    public AppointmentResponse updateStatus(Long id, String status) {
-
-        Appointment appointment = appointmentRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
-
-        try {
-            appointment.setStatus(AppointmentStatus.valueOf(status.toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status: " + status);
+            return customer;
         }
 
 
-        Appointment updated = appointmentRepo.save(appointment);
+        @Override
+        @Transactional
+        public AppointmentResponse updateStatus(Long id, String status) {
 
-        //create income entry
-        financeService.createAppointmentIncome(appointment);
+            Appointment appointment = appointmentRepo.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+            try {
+                appointment.setStatus(AppointmentStatus.valueOf(status.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid status: " + status);
+            }
+
+            Appointment updated = appointmentRepo.save(appointment);
+
+            if (AppointmentStatus.COMPLETED.equals(updated.getStatus())) {
+
+                financeService.createAppointmentIncome(updated);
+
+                Customer customer = updated.getCustomer();
+
+                for (AppointmentSaloonService appointmentService : updated.getServices()) {
+
+                    Services service = appointmentService.getService();
+
+                    if (service.getRevisitDays() != null) {
+
+                        Reminder reminder = Reminder.builder()
+                                .customer(customer)
+                                .service(service)
+                                .appointment(updated)
+                                .reminderDate(
+                                        updated.getAppointmentDate()
+                                                .plusDays(service.getRevisitDays())
+                                )
+                                .status(ReminderStatus.PENDING)
+                                .build();
+
+                        reminderRepository.save(reminder);
+                    }
+                }
+            }
+
+            return mapper.toResponse(updated);
+        }
 
 
-        return mapper.toResponse(updated);
+
+
+        @Override
+        public List<AppointmentResponse> getAll(){
+
+            return appointmentRepo.findAll()
+                    .stream()
+                    .map(mapper::toResponse)
+                    .toList();
+
+        }
+
+
+
+
+        @Override
+        public List<AppointmentResponse> today(){
+
+            return appointmentRepo
+                    .findByAppointmentDate(
+                            java.time.LocalDate.now()
+                    ).stream()
+                    .map(mapper::toResponse)
+                    .toList();
+
+        }
+
+
+
+
+        @Override
+        public void delete(Long id){
+
+            appointmentRepo.deleteById(id);
+
+        }
+
+
     }
-
-
-
-
-    @Override
-    public List<AppointmentResponse> getAll(){
-
-        return appointmentRepo.findAll()
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
-
-    }
-
-
-
-
-    @Override
-    public List<AppointmentResponse> today(){
-
-        return appointmentRepo
-                .findByAppointmentDate(
-                        java.time.LocalDate.now()
-                ).stream()
-                .map(mapper::toResponse)
-                .toList();
-
-    }
-
-
-
-
-    @Override
-    public void delete(Long id){
-
-        appointmentRepo.deleteById(id);
-
-    }
-
-
-}

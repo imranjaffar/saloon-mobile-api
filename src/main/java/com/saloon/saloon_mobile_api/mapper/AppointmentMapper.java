@@ -2,6 +2,7 @@ package com.saloon.saloon_mobile_api.mapper;
 
 
 import com.saloon.saloon_mobile_api.dto.AppointmentResponse;
+import com.saloon.saloon_mobile_api.dto.AppointmentServiceResponse;
 import com.saloon.saloon_mobile_api.entity.Appointment;
 import org.springframework.stereotype.Component;
 
@@ -13,30 +14,33 @@ public class AppointmentMapper {
         return AppointmentResponse.builder()
                 .id(appointment.getId())
 
-                .customerName(appointment.getCustomerName())
-                .customerPhone(appointment.getCustomerPhone())
+                .customerName(appointment.getCustomer().getName())
+                .customerPhone(appointment.getCustomer().getName())
 
                 .employeeId(
                         appointment.getEmployee() != null
                                 ? appointment.getEmployee().getId()
                                 : null
                 )
+
                 .employeeName(
                         appointment.getEmployee() != null
                                 ? appointment.getEmployee().getUser().getName()
                                 : null
                 )
 
-                .serviceId(
-                        appointment.getServices() != null
-                                ? appointment.getServices().getId()
-                                : null
+                .services(
+                        appointment.getServices()
+                                .stream()
+                                .map(service -> AppointmentServiceResponse.builder()
+                                        .serviceId(service.getService().getId())
+                                        .serviceName(service.getService().getName())
+                                        .price(service.getPrice())
+                                        .build())
+                                .toList()
                 )
-                .serviceName(
-                        appointment.getServices() != null
-                                ? appointment.getServices().getName()
-                                : null
-                )
+
+                .totalAmount(appointment.getTotalAmount())
 
                 .appointmentDate(appointment.getAppointmentDate())
                 .appointmentTime(appointment.getAppointmentTime())

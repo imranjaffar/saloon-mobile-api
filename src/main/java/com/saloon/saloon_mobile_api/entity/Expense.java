@@ -2,6 +2,7 @@ package com.saloon.saloon_mobile_api.entity;
 
 
 
+import com.saloon.saloon_mobile_api.dto.ExpenseSource;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,5 +60,11 @@ public class Expense extends BaseEntity {
                 LocalDateTime.now();
 
     }
+
+
+    @Enumerated(EnumType.STRING)
+    private ExpenseSource source;
+
+    private Long referenceId;
 
 }

@@ -3,13 +3,16 @@ package com.saloon.saloon_mobile_api.entity;
 
 
 
+import com.saloon.saloon_mobile_api.service.AppointmentService;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -33,13 +36,19 @@ public class Appointment extends BaseEntity {
     // Customer information only
     // No customer table required
 
-    @Column(nullable=false)
-    private String customerName;
 
 
+//    @Column(nullable=false)
+//    private String customerName;
+//
+//
+//
+//    private String customerPhone;
 
-    private String customerPhone;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="customer_id")
+    private Customer customer;
 
 
 
@@ -54,12 +63,13 @@ public class Appointment extends BaseEntity {
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name="service_id",
-            nullable=false
+    @OneToMany(
+            mappedBy = "appointment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
-    private Services services;
+    @Builder.Default
+    private List<AppointmentSaloonService> services = new ArrayList<>();
 
 
 
@@ -101,6 +111,10 @@ public class Appointment extends BaseEntity {
         }
 
     }
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
 
 }

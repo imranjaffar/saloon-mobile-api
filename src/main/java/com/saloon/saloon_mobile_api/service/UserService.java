@@ -28,4 +28,7 @@ public interface UserService {
     UserResponse toggleStatus(Long id, boolean status);
 
     List<UserResponse> getUsersWithoutEmployee();
+
+    UserResponse updateUser(Long id, User user);
+
 }

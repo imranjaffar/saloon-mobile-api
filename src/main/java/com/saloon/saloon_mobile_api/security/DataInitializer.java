@@ -25,7 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
 
 
-        createOwner();
+        createAdmin();
 
         createEmployee();
 
@@ -34,32 +34,32 @@ public class DataInitializer implements CommandLineRunner {
 
 
 
-    private void createOwner(){
+    private void createAdmin(){
 
 
-        if(userRepository.findByName("owner").isEmpty()){
+        if(userRepository.findByName("admin").isEmpty()){
 
 
-            User owner = User.builder()
+            User admin = User.builder()
 
-                    .name("owner")
+                    .name("admin")
 
                     .password(
-                            passwordEncoder.encode("owner123")
+                            passwordEncoder.encode("admin123")
                     )
 
-                    .role(Role.OWNER)
+                    .role(Role.ADMIN)
 
                     .build();
 
 
 
-            userRepository.save(owner);
+            userRepository.save(admin);
 
 
 
             System.out.println(
-                    "Default OWNER created : owner / owner123"
+                    "Default admin created : admin / admin123"
             );
 
         }

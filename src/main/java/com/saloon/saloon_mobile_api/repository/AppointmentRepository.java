@@ -53,5 +53,5 @@ public interface AppointmentRepository
     long countMonthlyAppointments();
 
 
-    long countByAppointmentDateBetween(LocalDateTime from, LocalDateTime to);
+    long countByAppointmentDateBetween(LocalDate from, LocalDate to);
 }

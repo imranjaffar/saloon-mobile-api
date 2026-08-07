@@ -42,7 +42,7 @@ public class ReportServiceImpl implements ReportService {
         // APPOINTMENTS (FIXED)
         // =========================
         long appointments = appointmentRepo
-                .countByAppointmentDateBetween(from, to);
+                .countByAppointmentDateBetween(from.toLocalDate(), to.toLocalDate());
 
 
         // =========================

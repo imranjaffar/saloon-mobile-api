@@ -7,15 +7,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 
 @Configuration
@@ -26,7 +20,7 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
 
 
-    private static final String OWNER = "OWNER";
+    private static final String ADMIN = "ADMIN";
     private static final String EMPLOYEE = "EMPLOYEE";
 
 
@@ -37,8 +31,8 @@ public class SecurityConfig {
 
 
 
-    // Owner only modules
-    private static final String[] OWNER_ENDPOINTS = {
+    // Admin only modules
+    private static final String[] ADMIN_ENDPOINTS = {
 
             "/users/**",
             "/employees/**",
@@ -54,8 +48,8 @@ public class SecurityConfig {
 
 
 
-    // Owner + Employee modules
-    private static final String[] OWNER_EMPLOYEE_ENDPOINTS = {
+    // Admin + Employee modules
+    private static final String[] ADMIN_EMPLOYEE_ENDPOINTS = {
 
             "/customers/**",
             "/appointments/**",
@@ -84,7 +78,7 @@ public class SecurityConfig {
                 .requestMatchers(PUBLIC_ENDPOINTS)
                 .permitAll()
 
-                // DELETE only owner
+                // DELETE only Admin
 
 
                 .requestMatchers(
@@ -93,21 +87,21 @@ public class SecurityConfig {
                         "/customers/**",
                         "/employees/**",
                         "/inventory/**"
-                ).hasAuthority(OWNER)
+                ).hasAuthority(ADMIN)
 
-                // Owner modules
+                // Admin modules
                 .requestMatchers(
-                        OWNER_ENDPOINTS
+                        ADMIN_ENDPOINTS
                 )
-                .hasAuthority(OWNER)
+                .hasAuthority(ADMIN)
 
 
-                // Owner + Employee modules
+                // Admin + Employee modules
                 .requestMatchers(
-                        OWNER_EMPLOYEE_ENDPOINTS
+                        ADMIN_EMPLOYEE_ENDPOINTS
                 )
                 .hasAnyAuthority(
-                        OWNER,
+                        ADMIN,
                         EMPLOYEE
                 )
 

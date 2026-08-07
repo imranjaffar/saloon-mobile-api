@@ -1,22 +1,21 @@
 package com.saloon.saloon_mobile_api.dto;
 
-import lombok.*;
-
-import java.time.LocalDateTime;
-
-
 import com.saloon.saloon_mobile_api.entity.AppointmentStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AppointmentResponse {
 
     private Long id;
@@ -26,10 +25,12 @@ public class AppointmentResponse {
     private String customerPhone;
 
     private Long employeeId;
+
     private String employeeName;
 
-    private Long serviceId;
-    private String serviceName;
+    private List<AppointmentServiceResponse> services;
+
+    private BigDecimal totalAmount;
 
     private LocalDate appointmentDate;
 

@@ -43,22 +43,22 @@ public class AttendanceController {
     }
 
     // =====================================
-    // OWNER CHECK-IN
+    // Admin CHECK-IN
     // POST /attendances/{employeeId}/check-in
     // =====================================
     @PostMapping("/{employeeId}/check-in")
-    public AttendanceResponse ownerCheckIn(
+    public AttendanceResponse adminCheckIn(
             @PathVariable Long employeeId) {
 
         return attendanceService.checkIn(employeeId);
     }
 
     // =====================================
-    // OWNER CHECK-OUT
+    // Admin CHECK-OUT
     // POST /attendances/{employeeId}/check-out
     // =====================================
     @PostMapping("/{employeeId}/check-out")
-    public AttendanceResponse ownerCheckOut(
+    public AttendanceResponse adminCheckOut(
             @PathVariable Long employeeId) {
 
         return attendanceService.checkOut(employeeId);
@@ -77,7 +77,7 @@ public class AttendanceController {
     }
 
     // =====================================
-    // OWNER - TODAY ATTENDANCE
+    // Admin - TODAY ATTENDANCE
     // GET /attendances/today
     // =====================================
     @GetMapping("/today")
@@ -87,7 +87,7 @@ public class AttendanceController {
     }
 
     // =====================================
-    // OWNER - EMPLOYEE ATTENDANCE
+    // Admin - EMPLOYEE ATTENDANCE
     // GET /attendances/employee/{employeeId}
     // =====================================
     @GetMapping("/employee/{employeeId}")
@@ -98,7 +98,7 @@ public class AttendanceController {
     }
 
     // =====================================
-    // OWNER - ATTENDANCE BY DATE
+    // Admin - ATTENDANCE BY DATE
     // GET /attendances/date?date=yyyy-MM-dd
     // =====================================
     @GetMapping("/date")

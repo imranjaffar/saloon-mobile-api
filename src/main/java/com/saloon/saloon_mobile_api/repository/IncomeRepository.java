@@ -4,6 +4,7 @@ package com.saloon.saloon_mobile_api.repository;
 
 
 import com.saloon.saloon_mobile_api.entity.Income;
+import com.saloon.saloon_mobile_api.entity.IncomeSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -44,5 +45,9 @@ AND i.createdAt < :end
     BigDecimal sumIncome();
 
 
+    boolean existsBySourceAndReferenceId(
+            IncomeSource source,
+            Long referenceId
+    );
 
 }

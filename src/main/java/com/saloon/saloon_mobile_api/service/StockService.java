@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.service;
 import com.saloon.saloon_mobile_api.dto.*;
 import com.saloon.saloon_mobile_api.entity.*;
 import com.saloon.saloon_mobile_api.mapper.InventoryTransactionMapper;
+import com.saloon.saloon_mobile_api.repository.ExpenseRepository;
 import com.saloon.saloon_mobile_api.repository.InventoryRepository;
 import com.saloon.saloon_mobile_api.repository.InventoryTransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -22,9 +26,18 @@ public class StockService {
 
     private final InventoryTransactionMapper transactionMapper;
 
+
+    private final ExpenseRepository expenseRepo;
+
+    private final FinanceService financeService;
+
+
+
     /**
      * Purchase / Stock In
      */
+
+    @Transactional
     public StockResponse stockIn(StockInRequest request) {
 
         InventoryItem item = getItem(request.getInventoryId());
@@ -39,11 +52,15 @@ public class StockService {
 
         BigDecimal stockAfter = stockBefore.add(quantity);
 
-        BigDecimal totalAmount =
-                request.getUnitPrice()
-                        .multiply(request.getQuantity());
+        BigDecimal totalAmount = request.getUnitPrice()
+                .multiply(request.getQuantity());
 
-        saveTransaction(
+        // Update inventory quantity
+        item.setAvailableQuantity(stockAfter);
+        inventoryRepository.save(item);
+
+        // Save stock transaction
+        InventoryTransaction transaction = saveTransaction(
                 item,
                 stockBefore,
                 stockAfter,
@@ -56,6 +73,9 @@ public class StockService {
                 totalAmount,
                 request.getRemarks()
         );
+
+        // Create finance expense
+        financeService.createStockInExpense(transaction, request);
 
         return toResponse(item);
     }
@@ -203,7 +223,7 @@ public class StockService {
                         new EntityNotFoundException("Inventory item not found."));
     }
 
-    private void saveTransaction(
+    private InventoryTransaction saveTransaction(
             InventoryItem item,
             BigDecimal stockBefore,
             BigDecimal stockAfter,
@@ -234,7 +254,7 @@ public class StockService {
                 .remarks(remarks)
                 .build();
 
-        transactionRepository.save(transaction);
+       return transactionRepository.save(transaction);
     }
 
     private StockResponse toResponse(InventoryItem item) {
@@ -271,5 +291,44 @@ public class StockService {
         }
 
         return quantity;
+    }
+
+
+
+    private void createStockInExpense(
+            InventoryTransaction transaction,
+            StockInRequest request) {
+
+        // Prevent duplicate expense creation
+        boolean exists = expenseRepo.existsByReferenceIdAndSource(
+                transaction.getId(),
+                ExpenseSource.INVENTORY_PURCHASE
+        );
+
+        if (exists) {
+            return;
+        }
+
+        Expense expense = new Expense();
+
+        expense.setAmount(transaction.getTotalAmount());
+
+        expense.setExpenseDate(LocalDateTime.now());
+
+        expense.setCreatedAt(LocalDateTime.now());
+
+        expense.setCategory("Inventory Purchase");
+
+        expense.setDescription(
+                "Stock purchased for "
+                        + transaction.getInventoryItem()
+        );
+
+
+        expense.setReferenceId(transaction.getId());
+
+        expense.setSource(ExpenseSource.INVENTORY_PURCHASE);
+
+        expenseRepo.save(expense);
     }
 }

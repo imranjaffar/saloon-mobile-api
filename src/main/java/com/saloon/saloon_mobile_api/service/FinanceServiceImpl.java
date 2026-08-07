@@ -3,14 +3,8 @@ package com.saloon.saloon_mobile_api.service;
 
 
 
-import com.saloon.saloon_mobile_api.dto.ExpenseRequest;
-import com.saloon.saloon_mobile_api.dto.ExpenseResponse;
-import com.saloon.saloon_mobile_api.dto.IncomeRequest;
-import com.saloon.saloon_mobile_api.dto.IncomeResponse;
-import com.saloon.saloon_mobile_api.entity.Appointment;
-import com.saloon.saloon_mobile_api.entity.Expense;
-import com.saloon.saloon_mobile_api.entity.Income;
-import com.saloon.saloon_mobile_api.entity.IncomeSource;
+import com.saloon.saloon_mobile_api.dto.*;
+import com.saloon.saloon_mobile_api.entity.*;
 import com.saloon.saloon_mobile_api.mapper.ExpenseMapper;
 import com.saloon.saloon_mobile_api.mapper.IncomeMapper;
 import com.saloon.saloon_mobile_api.repository.ExpenseRepository;
@@ -131,9 +125,16 @@ public class FinanceServiceImpl
     @Override
     public void createAppointmentIncome(Appointment appointment) {
 
+        // Prevent duplicate income entries
+        if (incomeRepo.existsBySourceAndReferenceId(
+                IncomeSource.APPOINTMENT,
+                appointment.getId())) {
+            return;
+        }
+
         Income income = new Income();
 
-//        income.setAmount(appointment.getTotalAmount());
+        income.setAmount(appointment.getTotalAmount());
 
         income.setCreatedAt(LocalDateTime.now());
 
@@ -149,6 +150,35 @@ public class FinanceServiceImpl
         income.setReferenceId(appointment.getId());
 
         incomeRepo.save(income);
+    }
+
+
+    @Override
+    public void createStockInExpense(
+            InventoryTransaction transaction,
+            StockInRequest request) {
+
+        if (transaction.getTotalAmount() == null ||
+                transaction.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        Expense expense = new Expense();
+
+        expense.setAmount(transaction.getTotalAmount());
+
+        expense.setCategory(transaction.getTransactionType().toString());
+
+        expense.setDescription(
+                "Inventory Purchase - " +
+                        transaction.getInventoryItem().getName()
+        );
+
+        expense.setReferenceId(transaction.getId());
+
+        expense.setCreatedAt(LocalDateTime.now());
+
+        expenseRepo.save(expense);
     }
 
 }

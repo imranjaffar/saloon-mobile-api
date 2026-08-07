@@ -52,4 +52,8 @@ public class Services  extends BaseEntity {
 
     }
 
+
+
+    private Integer revisitDays;
+
 }

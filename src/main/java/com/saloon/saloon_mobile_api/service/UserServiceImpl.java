@@ -145,6 +145,28 @@ public class UserServiceImpl
                 .map(userMapper::toResponse)
                 .toList();
     }
+    @Override
+    public UserResponse updateUser(Long id, User request) {
 
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setMobile(request.getMobile());
+        user.setRole(request.getRole());
+
+        // Update password only if provided
+        if (request.getPassword() != null &&
+                !request.getPassword().trim().isEmpty()) {
+
+            user.setPassword(
+                    encoder.encode(request.getPassword()));
+        }
+
+        User saved = repo.save(user);
+
+        return userMapper.toResponse(saved);
+    }
 
 }

@@ -10,7 +10,7 @@ import com.saloon.saloon_mobile_api.entity.Services;
 import java.util.List;
 
 
-public interface SaloonService {
+public interface  SaloonService {
 
 
     ServiceResponse create(

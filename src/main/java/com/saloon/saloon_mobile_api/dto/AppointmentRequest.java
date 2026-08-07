@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 
 @Data
@@ -25,8 +26,7 @@ public class AppointmentRequest {
 
 
 
-    private Long serviceId;
-
+    private List<Long> serviceIds;
 
 
     private LocalDate date;

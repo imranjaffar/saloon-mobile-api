@@ -78,4 +78,12 @@ public class UserController {
     }
 
 
+    @PutMapping("/{id}")
+    public UserResponse update(
+            @PathVariable Long id,
+            @RequestBody User user) {
+
+        return service.updateUser(id, user);
+    }
+
 }
