@@ -32,6 +32,7 @@ public class SaloonServiceImpl
                 .name(request.getName())
                 .active(true)
                 .description(request.getDescription())
+                .revisitDays(request.getRevisitDays())
                 .durationMinutes(request.getDurationMinutes())
                 .price(request.getPrice())
                 .build();
@@ -55,6 +56,7 @@ public class SaloonServiceImpl
         service.setDescription(request.getDescription());
         service.setDurationMinutes(request.getDurationMinutes());
         service.setPrice(request.getPrice());
+        service.setRevisitDays(request.getRevisitDays());
 
         Services updated = repository.save(service);
 

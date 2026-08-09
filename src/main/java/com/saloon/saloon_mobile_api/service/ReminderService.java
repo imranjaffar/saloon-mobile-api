@@ -32,10 +32,10 @@ public class ReminderService {
 
         Appointment appointment = null;
 
-        if (request.getAppointmentId() != null) {
-            appointment = appointmentRepository.findById(request.getAppointmentId())
-                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
-        }
+//        if (request.getAppointmentId() != null) {
+//            appointment = appointmentRepository.findById(request.getAppointmentId())
+//                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+//        }
 
         Services service = null;
 

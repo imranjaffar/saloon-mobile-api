@@ -16,4 +16,7 @@ public class ServiceResponse {
     private Integer durationMinutes;
 
     private BigDecimal price;
+
+    private Integer revisitDays;
+
 }

@@ -3,6 +3,7 @@ package com.saloon.saloon_mobile_api.repository;
 
 import com.saloon.saloon_mobile_api.entity.Appointment;
 import com.saloon.saloon_mobile_api.entity.AppointmentStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -20,7 +21,7 @@ public interface AppointmentRepository
 
     List<Appointment>
     findByAppointmentDate(
-            LocalDate date
+            LocalDate date, Pageable pageable
     );
 
 

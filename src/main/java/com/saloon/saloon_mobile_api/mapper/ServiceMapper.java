@@ -16,7 +16,7 @@ public class ServiceMapper {
         response.setDescription(service.getDescription());
         response.setDurationMinutes(service.getDurationMinutes());
         response.setPrice(service.getPrice());
-
+        response.setRevisitDays(service.getRevisitDays());
         return response;
     }
 }

@@ -142,7 +142,7 @@ public class FinanceServiceImpl
                 "Appointment #" +
                         appointment.getId() +
                         " - " +
-                        appointment.getCustomerName()
+                        appointment.getCustomer().getName()
         );
 
         income.setSource(IncomeSource.APPOINTMENT);

@@ -8,6 +8,9 @@ import com.saloon.saloon_mobile_api.service.AppointmentService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,9 +42,20 @@ public class AppointmentController {
 
 
     @GetMapping
-    public List<AppointmentResponse> all(){
+    public List<AppointmentResponse> all(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
 
-        return service.getAll();
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        Sort.Direction.DESC,
+                        "appointmentDate"
+                )
+        );
+        return service.getAll( pageable);
 
     }
 
@@ -50,9 +64,21 @@ public class AppointmentController {
 
 
     @GetMapping("/today")
-    public List<AppointmentResponse> today(){
+    public List<AppointmentResponse> today(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
 
-        return service.today();
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        Sort.Direction.ASC,
+                        "appointmentTime"
+                )
+        );
+
+
+        return service.today(pageable);
 
     }
 

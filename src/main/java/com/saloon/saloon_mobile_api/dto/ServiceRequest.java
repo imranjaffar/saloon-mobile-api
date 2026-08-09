@@ -22,5 +22,8 @@ public class ServiceRequest {
 
     private BigDecimal price;
 
+    private Integer revisitDays;
+
+
 
 }

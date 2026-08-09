@@ -9,6 +9,7 @@
     import com.saloon.saloon_mobile_api.repository.*;
     import lombok.RequiredArgsConstructor;
 
+    import org.springframework.data.domain.Pageable;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
 
@@ -176,9 +177,9 @@
 
 
         @Override
-        public List<AppointmentResponse> getAll(){
+        public List<AppointmentResponse> getAll(Pageable pageable){
 
-            return appointmentRepo.findAll()
+            return appointmentRepo.findAll(pageable)
                     .stream()
                     .map(mapper::toResponse)
                     .toList();
@@ -189,11 +190,11 @@
 
 
         @Override
-        public List<AppointmentResponse> today(){
+        public List<AppointmentResponse> today(Pageable pageable){
 
             return appointmentRepo
                     .findByAppointmentDate(
-                            java.time.LocalDate.now()
+                            java.time.LocalDate.now(),pageable
                     ).stream()
                     .map(mapper::toResponse)
                     .toList();
