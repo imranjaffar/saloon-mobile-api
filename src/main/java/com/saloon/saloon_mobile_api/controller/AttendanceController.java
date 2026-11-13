@@ -67,6 +67,26 @@ public class AttendanceController {
         );
     }
 
+
+
+    @PostMapping("/corrections")
+    public AttendanceCorrectionResponse requestCorrection(
+            @RequestBody AttendanceCorrectionRequest request,
+            Authentication authentication) {
+        return correctionService.request(authentication.getName(), request);
+    }
+
+    @GetMapping("/corrections/mine")
+    public List<AttendanceCorrectionResponse> myCorrectionRequests(
+            Authentication authentication) {
+        return correctionService.getMyRequests(authentication.getName());
+    }
+
+    @GetMapping("/corrections/pending")
+    public List<AttendanceCorrectionResponse> pendingCorrectionRequests() {
+        return correctionService.getPendingRequests();
+    }
+
     @PostMapping("/corrections")
     public AttendanceCorrectionResponse requestCorrection(
             @RequestBody AttendanceCorrectionRequest request,
@@ -117,6 +137,35 @@ public class AttendanceController {
         return correctionService.getHistory(
                 PaginationSupport.page(page, size)
         );
+    }
+
+    @PostMapping("/corrections/{correctionId}/approve")
+    public AttendanceCorrectionResponse approveCorrection(
+            @PathVariable Long correctionId,
+            @RequestBody(required = false)
+            AttendanceCorrectionReviewRequest request,
+            Authentication authentication) {
+        return correctionService.approve(
+                correctionId,
+                authentication.getName(),
+                request == null ? null : request.getReviewNote()
+        );
+    }
+
+    @PostMapping("/corrections/{correctionId}/reject")
+    public AttendanceCorrectionResponse rejectCorrection(
+            @PathVariable Long correctionId,
+            @RequestBody(required = false)
+            AttendanceCorrectionReviewRequest request,
+            Authentication authentication) {
+        return correctionService.reject(
+                correctionId,
+                authentication.getName(),
+                request == null ? null : request.getReviewNote()
+        );
+    @GetMapping("/corrections/history")
+    public List<AttendanceCorrectionResponse> correctionHistory() {
+        return correctionService.getHistory();
     }
 
     @PostMapping("/corrections/{correctionId}/approve")

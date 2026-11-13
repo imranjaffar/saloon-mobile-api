@@ -4,8 +4,6 @@ import com.saloon.saloon_mobile_api.dto.CreateInventoryRequest;
 import com.saloon.saloon_mobile_api.dto.InventoryResponse;
 import com.saloon.saloon_mobile_api.dto.UpdateInventoryRequest;
 import com.saloon.saloon_mobile_api.entity.InventoryItem;
-import com.saloon.saloon_mobile_api.entity.PackageUnit;
-import com.saloon.saloon_mobile_api.entity.Unit;
 import com.saloon.saloon_mobile_api.mapper.InventoryMapper;
 import com.saloon.saloon_mobile_api.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,23 +14,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.saloon.saloon_mobile_api.entity.PackageUnit.*;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository inventoryRepository;
-
     private final InventoryMapper inventoryMapper;
 
     @Override
     public InventoryResponse create(CreateInventoryRequest request) {
-
         if (inventoryRepository.findByNameIgnoreCase(request.getName()).isPresent()) {
             throw new RuntimeException("Inventory item already exists.");
         }
+
+        String normalizedPackageName = normalizePackageName(request.getPackageName());
+        validatePackageConfig(normalizedPackageName, request.getUnitsPerPackage());
 
         InventoryItem item = InventoryItem.builder()
                 .name(request.getName())
@@ -45,12 +42,12 @@ public class InventoryServiceImpl implements InventoryService {
                 .sellingPrice(request.getSellingPrice())
                 .supplierName(request.getSupplierName())
                 .remarks(request.getRemarks())
+                .packageName(normalizedPackageName)
+                .unitsPerPackage(request.getUnitsPerPackage())
                 .active(true)
                 .build();
 
-        return inventoryMapper.toResponse(
-                inventoryRepository.save(item)
-        );
+        return inventoryMapper.toResponse(inventoryRepository.save(item));
     }
 
 //    private static InventoryItem getInventoryItem(CreateInventoryRequest request) {
@@ -72,27 +69,49 @@ public class InventoryServiceImpl implements InventoryService {
 //    }
 
     @Override
-    public InventoryResponse update(
-            Long id,
-            UpdateInventoryRequest request
-    ) {
-
+    public InventoryResponse update(Long id, UpdateInventoryRequest request) {
         InventoryItem item = getEntity(id);
 
-        item.setName(request.getName());
-        item.setCategory(request.getCategory());
-        item.setBrand(request.getBrand());
-        item.setUnit(request.getUnit());
-        item.setMinimumQuantity(request.getMinimumQuantity());
-        item.setPurchasePrice(request.getPurchasePrice());
-        item.setSellingPrice(request.getSellingPrice());
-        item.setSupplierName(request.getSupplierName());
-        item.setRemarks(request.getRemarks());
-        item.setActive(request.getActive());
+        if (request.getName() != null) item.setName(request.getName());
+        if (request.getCategory() != null) item.setCategory(request.getCategory());
+        if (request.getBrand() != null) item.setBrand(request.getBrand());
+        if (request.getUnit() != null) item.setUnit(request.getUnit());
+        if (request.getMinimumQuantity() != null) item.setMinimumQuantity(request.getMinimumQuantity());
+        if (request.getPurchasePrice() != null) item.setPurchasePrice(request.getPurchasePrice());
+        if (request.getSellingPrice() != null) item.setSellingPrice(request.getSellingPrice());
+        if (request.getSupplierName() != null) item.setSupplierName(request.getSupplierName());
+        if (request.getRemarks() != null) item.setRemarks(request.getRemarks());
+        if (request.getActive() != null) item.setActive(request.getActive());
 
-        return inventoryMapper.toResponse(
-                inventoryRepository.save(item)
-        );
+        String normalizedPackageName = normalizePackageName(request.getPackageName());
+        if (request.getPackageName() != null || request.getUnitsPerPackage() != null) {
+            validatePackageConfig(normalizedPackageName, request.getUnitsPerPackage());
+            item.setPackageName(normalizedPackageName);
+            item.setUnitsPerPackage(request.getUnitsPerPackage());
+        } else if (request.getPackageName() == null && request.getUnitsPerPackage() == null) {
+            // keep legacy/unchanged values
+        }
+
+        return inventoryMapper.toResponse(inventoryRepository.save(item));
+    }
+
+    private void validatePackageConfig(String packageName, BigDecimal unitsPerPackage) {
+        boolean hasPackageName = packageName != null && !packageName.trim().isEmpty();
+        boolean hasUnitsPerPackage = unitsPerPackage != null;
+
+        if (!hasPackageName && !hasUnitsPerPackage) {
+            return;
+        }
+
+        if (!hasPackageName || !hasUnitsPerPackage || unitsPerPackage.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Package name and unitsPerPackage must be supplied together, and unitsPerPackage must be greater than zero.");
+        }
+    }
+
+    private String normalizePackageName(String packageName) {
+        if (packageName == null) return null;
+        String normalized = packageName.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     @Override
@@ -104,10 +123,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional(readOnly = true)
     public List<InventoryResponse> getAll() {
-
-        return inventoryMapper.toResponseList(
-                inventoryRepository.findByActiveTrue()
-        );
+        return inventoryMapper.toResponseList(inventoryRepository.findByActiveTrue());
     }
 
     @Override
@@ -134,10 +150,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional(readOnly = true)
     public List<InventoryResponse> getLowStock() {
-
-        return inventoryMapper.toResponseList(
-                inventoryRepository.findLowStockItems()
-        );
+        return inventoryMapper.toResponseList(inventoryRepository.findLowStockItems());
     }
 
     @Override
@@ -150,66 +163,13 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public void delete(Long id) {
-
         InventoryItem item = getEntity(id);
-
         item.setActive(false);
-
         inventoryRepository.save(item);
     }
 
     private InventoryItem getEntity(Long id) {
-
         return inventoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Inventory Item not found."));
+                .orElseThrow(() -> new RuntimeException("Inventory Item not found."));
     }
-
-
-//
-//    private void validatePackage(PackageUnit packageUnit,BigDecimal packageQuantity,Unit unit) {
-//
-//        if (packageUnit == null &&
-//                packageQuantity == null) {
-//            return; // inventory without package tracking
-//        }
-//
-//        if (packageUnit == null ||
-//                packageQuantity == null) {
-//            throw new IllegalArgumentException(
-//                    "Both package unit and package quantity are required.");
-//        }
-//
-//        switch (unit) {
-//
-//            case ML, LITRE -> {
-//                if (packageUnit != PackageUnit.BOTTLE &&
-//                        packageUnit != PackageUnit.CAN &&
-//                        packageUnit != CARTON) {
-//                    throw new IllegalArgumentException(
-//                            "Liquids can only use Bottle, Can or Carton as package unit.");
-//                }
-//            }
-//
-//            case KG, GM -> {
-//                if (packageUnit != BAG &&
-//                        packageUnit != BOX) {
-//                    throw new IllegalArgumentException(
-//                            "Weight items can only use Bag or Box as package unit.");
-//                }
-//            }
-//
-//            case PCS -> {
-//                if (packageUnit != BOX &&
-//                        packageUnit != CARTON) {
-//                    throw new IllegalArgumentException(
-//                            "Pieces can only use Box or Carton as package unit.");
-//                }
-//            }
-//
-//
-//            default -> {
-//            }
-//        }
-//    }
 }

@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,48 +23,29 @@ public class StockService {
 
     private final InventoryRepository inventoryRepository;
     private final InventoryTransactionRepository transactionRepository;
-
     private final InventoryTransactionMapper transactionMapper;
-
-
     private final ExpenseRepository expenseRepo;
-
     private final FinanceService financeService;
 
-
-
-    /**
-     * Purchase / Stock In
-     */
-
-    @Transactional
     public StockResponse stockIn(StockInRequest request) {
-
         InventoryItem item = getItem(request.getInventoryId());
 
-        BigDecimal stockBefore = item.getAvailableQuantity();
+        BigDecimal stockBefore = item.getAvailableQuantity() == null ? BigDecimal.ZERO : item.getAvailableQuantity();
+        BigDecimal convertedQuantity = convertQuantity(item, request.getQuantity(), request.getQuantityMode(), false);
 
-        BigDecimal quantity = convertQuantity(
-                item,
-                request.getQuantity(),
-                request.getQuantityMode()
-        );
-
-        BigDecimal stockAfter = stockBefore.add(quantity);
+        BigDecimal stockAfter = stockBefore.add(convertedQuantity);
 
         BigDecimal totalAmount = request.getUnitPrice()
                 .multiply(request.getQuantity());
 
-        // Update inventory quantity
         item.setAvailableQuantity(stockAfter);
         inventoryRepository.save(item);
 
-        // Save stock transaction
         InventoryTransaction transaction = saveTransaction(
                 item,
                 stockBefore,
                 stockAfter,
-                quantity,
+                convertedQuantity,
                 TransactionType.STOCK_IN,
                 request.getReferenceType(),
                 request.getReferenceId(),
@@ -75,38 +55,28 @@ public class StockService {
                 request.getRemarks()
         );
 
-        // Create finance expense
         financeService.createStockInExpense(transaction, request);
 
         return toResponse(item);
     }
 
-    /**
-     * Manual Stock Out
-     */
     public StockResponse stockOut(StockOutRequest request) {
-
         InventoryItem item = getItem(request.getInventoryId());
 
-        BigDecimal stockBefore = item.getAvailableQuantity();
+        BigDecimal stockBefore = item.getAvailableQuantity() == null ? BigDecimal.ZERO : item.getAvailableQuantity();
+        BigDecimal convertedQuantity = convertQuantity(item, request.getQuantity(), request.getQuantityMode(), false);
 
-        BigDecimal quantity = convertQuantity(
-                item,
-                request.getQuantity(),
-                request.getQuantityMode()
-        );
-
-        if (stockBefore.compareTo(quantity) < 0) {
+        if (stockBefore.compareTo(convertedQuantity) < 0) {
             throw new IllegalArgumentException("Insufficient stock.");
         }
 
-        BigDecimal stockAfter = stockBefore.subtract(quantity);
+        BigDecimal stockAfter = stockBefore.subtract(convertedQuantity);
 
         saveTransaction(
                 item,
                 stockBefore,
                 stockAfter,
-                quantity.negate(),
+                convertedQuantity.negate(),
                 TransactionType.RETURN,
                 request.getReferenceType(),
                 request.getReferenceId(),
@@ -119,27 +89,18 @@ public class StockService {
         return toResponse(item);
     }
 
-    /**
-     * Manual Adjustment
-     */
     public StockResponse adjustStock(StockAdjustmentRequest request) {
-
         InventoryItem item = getItem(request.getInventoryId());
 
-        BigDecimal stockBefore = item.getAvailableQuantity();
+        BigDecimal stockBefore = item.getAvailableQuantity() == null ? BigDecimal.ZERO : item.getAvailableQuantity();
+        BigDecimal newBaseQuantity = convertQuantity(item, request.getNewQuantity(), request.getQuantityMode(), true);
 
-        BigDecimal newStock = convertQuantity(
-                item,
-                request.getNewQuantity(),
-                request.getQuantityMode()
-        );
-
-        BigDecimal difference = newStock.subtract(stockBefore);
+        BigDecimal difference = newBaseQuantity.subtract(stockBefore);
 
         saveTransaction(
                 item,
                 stockBefore,
-                newStock,
+                newBaseQuantity,
                 difference,
                 TransactionType.ADJUSTMENT,
                 ReferenceType.MANUAL,
@@ -153,20 +114,11 @@ public class StockService {
         return toResponse(item);
     }
 
-    /**
-     * Future Appointment deduction
-     */
     public StockResponse deductStock(StockDeductionRequest request) {
-
         InventoryItem item = getItem(request.getInventoryId());
 
-        BigDecimal stockBefore = item.getAvailableQuantity();
-
-        BigDecimal deduction = convertQuantity(
-                item,
-                request.getQuantity(),
-                request.getQuantityMode()
-        );
+        BigDecimal stockBefore = item.getAvailableQuantity() == null ? BigDecimal.ZERO : item.getAvailableQuantity();
+        BigDecimal deduction = convertQuantity(item, request.getQuantity(), request.getQuantityMode(), false);
 
         if (stockBefore.compareTo(deduction) < 0) {
             throw new IllegalArgumentException("Insufficient stock.");
@@ -193,9 +145,7 @@ public class StockService {
 
     @Transactional(readOnly = true)
     public List<InventoryTransactionResponse> history(Long inventoryId) {
-
-        return transactionRepository
-                .findByInventoryItemIdOrderByCreatedAtDesc(inventoryId)
+        return transactionRepository.findByInventoryItemIdOrderByCreatedAtDesc(inventoryId)
                 .stream()
                 .map(transactionMapper::toResponse)
                 .toList();
@@ -217,7 +167,6 @@ public class StockService {
 
     @Transactional(readOnly = true)
     public StockDashboardResponse dashboard() {
-
         return StockDashboardResponse.builder()
                 .totalItems(inventoryRepository.count())
                 .activeItems(inventoryRepository.countByActiveTrue())
@@ -227,15 +176,9 @@ public class StockService {
                 .build();
     }
 
-    //-----------------------------------------------------
-    // Helpers
-    //-----------------------------------------------------
-
     private InventoryItem getItem(Long id) {
-
         return inventoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Inventory item not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Inventory item not found."));
     }
 
     private InventoryTransaction saveTransaction(
@@ -249,10 +192,9 @@ public class StockService {
             String supplierName,
             BigDecimal unitPrice,
             BigDecimal totalAmount,
-            String remarks) {
-
+            String remarks
+    ) {
         item.setAvailableQuantity(stockAfter);
-
         inventoryRepository.save(item);
 
         InventoryTransaction transaction = InventoryTransaction.builder()
@@ -269,81 +211,52 @@ public class StockService {
                 .remarks(remarks)
                 .build();
 
-       return transactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
     }
 
     private StockResponse toResponse(InventoryItem item) {
-
         return StockResponse.builder()
                 .inventoryId(item.getId())
                 .inventoryName(item.getName())
-                .availableQuantity(item.getAvailableQuantity())
+                .availableQuantity(item.getAvailableQuantity() == null ? BigDecimal.ZERO : item.getAvailableQuantity())
                 .unit(item.getUnit())
-                .lowStock(
-                        item.getAvailableQuantity()
-                                .compareTo(item.getMinimumQuantity()) <= 0
-                )
+                .lowStock(item.getAvailableQuantity() != null
+                        && item.getMinimumQuantity() != null
+                        && item.getAvailableQuantity().compareTo(item.getMinimumQuantity()) <= 0)
                 .build();
     }
 
-    /**
-     /**
-     * Returns the quantity as entered.
-     * Currently the application maintains stock only in the inventory base unit
-     * (ML, GM, PCS, etc.).
-     *
-     * Package conversion (Bottle → ML, Box → PCS) will be introduced later
-     * when Service Inventory integration is implemented.
-     */
     private BigDecimal convertQuantity(
             InventoryItem item,
             BigDecimal quantity,
-            QuantityMode mode) {
-
-        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
-                    "Quantity must be greater than zero.");
+            QuantityMode mode,
+            boolean allowZero
+    ) {
+        if (quantity == null) {
+            throw new IllegalArgumentException("Quantity is required.");
+        }
+        if (quantity.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative.");
+        }
+        if (!allowZero && quantity.compareTo(BigDecimal.ZERO) == 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero.");
         }
 
-        return quantity;
-    }
-
-
-
-    private void createStockInExpense(
-            InventoryTransaction transaction,
-            StockInRequest request) {
-
-        // Prevent duplicate expense creation
-        boolean exists = expenseRepo.existsByReferenceIdAndSource(
-                transaction.getId(),
-                ExpenseSource.INVENTORY_PURCHASE
-        );
-
-        if (exists) {
-            return;
+        if (mode == null) {
+            throw new IllegalArgumentException("Quantity mode is required.");
         }
 
-        Expense expense = new Expense();
+        if (mode == QuantityMode.UNIT) {
+            return quantity;
+        }
 
-        expense.setAmount(transaction.getTotalAmount());
+        if (mode == QuantityMode.PACKAGE) {
+            if (!item.hasPackageConfiguration()) {
+                throw new IllegalArgumentException("PACKAGE mode requires packageName and unitsPerPackage.");
+            }
+            return quantity.multiply(item.getUnitsPerPackage());
+        }
 
-        expense.setExpenseDate(LocalDateTime.now());
-
-        expense.setCreatedAt(LocalDateTime.now());
-
-        expense.setCategory("Inventory Purchase");
-
-        expense.setDescription(
-                "Stock purchased for "
-                        + transaction.getInventoryItem()
-        );
-
-
-        expense.setReferenceId(transaction.getId());
-
-        expense.setSource(ExpenseSource.INVENTORY_PURCHASE);
-
-        expenseRepo.save(expense);
+        throw new IllegalArgumentException("Unsupported quantity mode: " + mode);
     }
 }
