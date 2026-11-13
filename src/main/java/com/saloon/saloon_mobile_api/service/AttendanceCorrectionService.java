@@ -12,6 +12,7 @@ import com.saloon.saloon_mobile_api.repository.AttendanceRepository;
 import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
 import com.saloon.saloon_mobile_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,6 +107,18 @@ public class AttendanceCorrectionService {
     }
 
     @Transactional(readOnly = true)
+    public List<AttendanceCorrectionResponse> getMyRequests(
+            String username,
+            Pageable pageable
+    ) {
+        User user = findUser(username);
+        return correctionRepository
+                .findByRequestedBy(user, pageable)
+                .map(AttendanceCorrectionResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<AttendanceCorrectionResponse> getPendingRequests() {
         return correctionRepository
                 .findByStatusOrderByCreatedAtDesc(
@@ -117,12 +130,30 @@ public class AttendanceCorrectionService {
     }
 
     @Transactional(readOnly = true)
+    public List<AttendanceCorrectionResponse> getPendingRequests(
+            Pageable pageable
+    ) {
+        return correctionRepository
+                .findByStatus(AttendanceCorrectionStatus.PENDING, pageable)
+                .map(AttendanceCorrectionResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<AttendanceCorrectionResponse> getHistory() {
         return correctionRepository
                 .findByStatusNotOrderByCreatedAtDesc(
                         AttendanceCorrectionStatus.PENDING
                 )
                 .stream()
+                .map(AttendanceCorrectionResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AttendanceCorrectionResponse> getHistory(Pageable pageable) {
+        return correctionRepository
+                .findByStatusNot(AttendanceCorrectionStatus.PENDING, pageable)
                 .map(AttendanceCorrectionResponse::from)
                 .toList();
     }
