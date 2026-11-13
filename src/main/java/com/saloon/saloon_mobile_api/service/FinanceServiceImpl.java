@@ -12,6 +12,7 @@ import com.saloon.saloon_mobile_api.repository.IncomeRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 
 import java.math.BigDecimal;
@@ -79,6 +80,13 @@ public class FinanceServiceImpl
 
     }
 
+    @Override
+    public List<IncomeResponse> getIncome(Pageable pageable) {
+        return incomeRepo.findAll(pageable)
+                .map(incomeMapper::toResponse)
+                .toList();
+    }
+
 
 
 
@@ -88,6 +96,13 @@ public class FinanceServiceImpl
         List<Expense> expenseList=expenseRepo.findAll();
         return expenseList.stream().map(expenseMapper::toResponse).collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<ExpenseResponse> getExpenses(Pageable pageable) {
+        return expenseRepo.findAll(pageable)
+                .map(expenseMapper::toResponse)
+                .toList();
     }
 
 
