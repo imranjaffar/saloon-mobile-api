@@ -28,6 +28,12 @@ public class AttendanceMapper {
                 .attendanceDate(attendance.getAttendanceDate())
                 .checkIn(attendance.getCheckIn())
                 .checkOut(attendance.getCheckOut())
+                .checkOutRecordedByName(
+                        attendance.getCheckOutRecordedBy() == null
+                                ? null
+                                : attendance.getCheckOutRecordedBy().getName()
+                )
+                .checkOutReason(attendance.getCheckOutReason())
                 .status(attendance.getStatus() != null
                         ? attendance.getStatus().name()
                         : null

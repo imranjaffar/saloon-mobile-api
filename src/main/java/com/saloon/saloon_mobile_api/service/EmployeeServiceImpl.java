@@ -11,6 +11,7 @@ import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
 import com.saloon.saloon_mobile_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,6 +55,29 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeRepo.findAll()
                 .stream()
+                .map(employeeMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<EmployeeResponse> getPage(Pageable pageable) {
+        return employeeRepo.findAll(pageable)
+                .map(employeeMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<EmployeeResponse> getPage(Pageable pageable, String search) {
+        String query = search == null ? "" : search.trim();
+        if (query.isEmpty()) {
+            return getPage(pageable);
+        }
+        return employeeRepo
+                .findByUser_NameContainingIgnoreCaseOrDesignationContainingIgnoreCase(
+                        query,
+                        query,
+                        pageable
+                )
                 .map(employeeMapper::toResponse)
                 .toList();
     }

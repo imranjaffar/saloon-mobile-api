@@ -6,6 +6,7 @@ import com.saloon.saloon_mobile_api.dto.UserResponse;
 import com.saloon.saloon_mobile_api.entity.User;
 
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 
 public interface UserService {
@@ -18,6 +19,7 @@ public interface UserService {
 
     // 🔥 GET ALL USERS
     List<UserResponse> getAllUsers();
+    List<UserResponse> getUsersPage(Pageable pageable);
 
     void enableUser(Long id);
 

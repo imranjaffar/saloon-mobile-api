@@ -8,6 +8,7 @@ import com.saloon.saloon_mobile_api.mapper.ServiceMapper;
 import com.saloon.saloon_mobile_api.repository.SalonServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 
 import java.util.List;
@@ -84,6 +85,13 @@ public class SaloonServiceImpl
         List<Services> servicesList = repository.findByActiveTrue();
         return servicesList.stream().map(serviceMapper::toResponse).collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<ServiceResponse> getPage(Pageable pageable) {
+        return repository.findByActiveTrue(pageable)
+                .map(serviceMapper::toResponse)
+                .toList();
     }
 
 

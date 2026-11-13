@@ -4,6 +4,8 @@ import com.saloon.saloon_mobile_api.entity.InventoryTransaction;
 import com.saloon.saloon_mobile_api.entity.ReferenceType;
 import com.saloon.saloon_mobile_api.entity.TransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,10 @@ public interface InventoryTransactionRepository
      */
     List<InventoryTransaction> findByInventoryItemIdOrderByCreatedAtDesc(
             Long inventoryItemId
+    );
+    Page<InventoryTransaction> findByInventoryItemIdOrderByCreatedAtDesc(
+            Long inventoryItemId,
+            Pageable pageable
     );
 
     /**

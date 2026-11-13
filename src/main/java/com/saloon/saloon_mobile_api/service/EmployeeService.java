@@ -9,6 +9,7 @@ import com.saloon.saloon_mobile_api.dto.UpdateEmployeeRequest;
 import com.saloon.saloon_mobile_api.entity.Employee;
 
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 
 public interface EmployeeService {
@@ -18,6 +19,8 @@ public interface EmployeeService {
 
 
     List<EmployeeResponse> getAll();
+    List<EmployeeResponse> getPage(Pageable pageable);
+    List<EmployeeResponse> getPage(Pageable pageable, String search);
 
 
     EmployeeResponse get(Long id);

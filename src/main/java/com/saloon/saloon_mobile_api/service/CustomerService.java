@@ -7,6 +7,7 @@ import com.saloon.saloon_mobile_api.dto.CustomerResponse;
 import com.saloon.saloon_mobile_api.entity.Customer;
 
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 
 public interface CustomerService {
@@ -16,6 +17,8 @@ public interface CustomerService {
 
 
     List<CustomerResponse> getAll();
+    List<CustomerResponse> getPage(Pageable pageable);
+    List<CustomerResponse> getPage(Pageable pageable, String search);
 
 
     CustomerResponse get(Long id);

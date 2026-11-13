@@ -5,6 +5,7 @@ import com.saloon.saloon_mobile_api.dto.InventoryResponse;
 import com.saloon.saloon_mobile_api.dto.UpdateInventoryRequest;
 
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface InventoryService {
 
@@ -16,8 +17,11 @@ public interface InventoryService {
     InventoryResponse getById(Long id) throws Exception;
 
     List<InventoryResponse> getAll();
+    List<InventoryResponse> getPage(Pageable pageable);
+    List<InventoryResponse> getPage(Pageable pageable, String search, boolean lowStockOnly);
 
     List<InventoryResponse> getLowStock();
+    List<InventoryResponse> getLowStock(Pageable pageable);
 
     void delete(Long id) throws Exception;
 

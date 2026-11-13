@@ -12,6 +12,7 @@ import com.saloon.saloon_mobile_api.repository.EmployeeRepository;
 import com.saloon.saloon_mobile_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,6 +59,8 @@ public class AttendanceServiceImpl
         }
 
         attendance.setCheckOut(LocalDateTime.now());
+        attendance.setCheckOutRecordedBy(user);
+        attendance.setCheckOutReason(null);
 
         Attendance saved = attendanceRepository.save(attendance);
 
@@ -82,35 +85,21 @@ public class AttendanceServiceImpl
                 .toList();
     }
 
-
     @Override
-    public AttendanceResponse checkIn(Long employeeId) {
-
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() ->
-                        new RuntimeException("Employee not found"));
-
-        LocalDate today = LocalDate.now();
-
-        Attendance attendance = attendanceRepository
-                .findByEmployeeAndAttendanceDate(employee, today)
-                .orElse(null);
-
-        if (attendance != null && attendance.getCheckIn() != null) {
-            throw new RuntimeException("Already checked in");
-        }
-
-        if (attendance == null) {
-            attendance = new Attendance();
-            attendance.setEmployee(employee);
-            attendance.setAttendanceDate(today);
-        }
-
-        attendance.setCheckIn(LocalDateTime.now());
-        attendance.setStatus(AttendanceStatus.PRESENT);
-
-        return mapper.toResponse(attendanceRepository.save(attendance));
+    public List<AttendanceResponse> getMyAttendance(
+            String username,
+            Pageable pageable
+    ) {
+        User user = userRepo.findByName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        return attendanceRepository
+                .findByEmployeeOrderByAttendanceDateDesc(employee, pageable)
+                .map(mapper::toResponse)
+                .toList();
     }
+
 
     @Override
     public AttendanceResponse checkIn(String userName) {
@@ -189,8 +178,23 @@ public class AttendanceServiceImpl
 
 
     @Override
-    public AttendanceResponse checkOut(Long employeeId) {
+    public AttendanceResponse checkOut(
+            Long employeeId,
+            String userName,
+            String reason
+    ) {
 
+        String checkOutReason = reason == null ? "" : reason.trim();
+        if (checkOutReason.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "A reason is required for an admin-recorded checkout."
+            );
+        }
+        if (checkOutReason.length() > 500) {
+            throw new IllegalArgumentException(
+                    "Reason must be 500 characters or fewer."
+            );
+        }
 
         Employee employee =
                 employeeRepository.findById(employeeId)
@@ -229,8 +233,11 @@ public class AttendanceServiceImpl
                 LocalDateTime.now()
         );
 
-
-
+        User admin = userRepo.findByName(userName)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+        attendance.setCheckOutRecordedBy(admin);
+        attendance.setCheckOutReason(checkOutReason);
 
         Attendance updatedAttendance= attendanceRepository.save(attendance);
 
@@ -322,6 +329,14 @@ public class AttendanceServiceImpl
 
     }
 
+    @Override
+    public List<AttendanceResponse> getTodayAttendance(Pageable pageable) {
+        return attendanceRepository
+                .findByAttendanceDate(LocalDate.now(), pageable)
+                .map(mapper::toResponse)
+                .toList();
+    }
+
 
 
 
@@ -343,6 +358,16 @@ public class AttendanceServiceImpl
 
     }
 
+    @Override
+    public List<AttendanceResponse> getAttendanceByEmployee(
+            Long employeeId,
+            Pageable pageable
+    ) {
+        return attendanceRepository.findByEmployeeId(employeeId, pageable)
+                .map(mapper::toResponse)
+                .toList();
+    }
+
 
 
 
@@ -362,5 +387,14 @@ public class AttendanceServiceImpl
 
     }
 
+    @Override
+    public List<AttendanceResponse> getAttendanceByDate(
+            LocalDate date,
+            Pageable pageable
+    ) {
+        return attendanceRepository.findByAttendanceDate(date, pageable)
+                .map(mapper::toResponse)
+                .toList();
+    }
 
 }

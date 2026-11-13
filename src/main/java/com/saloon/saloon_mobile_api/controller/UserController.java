@@ -9,6 +9,8 @@ import com.saloon.saloon_mobile_api.security.JwtUtil;
 import com.saloon.saloon_mobile_api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import com.saloon.saloon_mobile_api.utility.PaginationSupport;
 
 
 import java.util.List;
@@ -36,6 +38,14 @@ public class UserController {
     @GetMapping
     public List<UserResponse> getAll() {
         return service.getAllUsers();
+    }
+
+    @GetMapping("/page")
+    public List<UserResponse> getPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PaginationSupport.page(page, size);
+        return service.getUsersPage(pageable);
     }
 
     // 🔥 ENABLE / DISABLE

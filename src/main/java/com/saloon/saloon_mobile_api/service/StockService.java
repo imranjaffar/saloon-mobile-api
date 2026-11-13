@@ -9,6 +9,7 @@ import com.saloon.saloon_mobile_api.repository.InventoryTransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -196,6 +197,20 @@ public class StockService {
         return transactionRepository
                 .findByInventoryItemIdOrderByCreatedAtDesc(inventoryId)
                 .stream()
+                .map(transactionMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<InventoryTransactionResponse> history(
+            Long inventoryId,
+            Pageable pageable
+    ) {
+        return transactionRepository
+                .findByInventoryItemIdOrderByCreatedAtDesc(
+                        inventoryId,
+                        pageable
+                )
                 .map(transactionMapper::toResponse)
                 .toList();
     }

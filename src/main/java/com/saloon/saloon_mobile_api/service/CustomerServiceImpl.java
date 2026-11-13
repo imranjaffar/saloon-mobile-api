@@ -12,6 +12,7 @@ import com.saloon.saloon_mobile_api.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 
 import java.util.List;
@@ -53,6 +54,24 @@ public class CustomerServiceImpl
 
        return customerMapper.toResponseList(customerList);
 
+    }
+
+    @Override
+    public List<CustomerResponse> getPage(Pageable pageable) {
+        return repo.findAll(pageable)
+                .map(customerMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<CustomerResponse> getPage(Pageable pageable, String search) {
+        String query = search == null ? "" : search.trim();
+        if (query.isEmpty()) {
+            return getPage(pageable);
+        }
+        return repo.searchPage(query, pageable)
+                .map(customerMapper::toResponse)
+                .toList();
     }
 
 

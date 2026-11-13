@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import com.saloon.saloon_mobile_api.utility.PaginationSupport;
 
 import java.util.List;
 
@@ -79,6 +81,17 @@ public class StockController {
 
         return ResponseEntity.ok(
                 stockService.history(inventoryId)
+        );
+    }
+
+    @GetMapping("/{inventoryId}/history/page")
+    public ResponseEntity<List<InventoryTransactionResponse>> historyPage(
+            @PathVariable Long inventoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PaginationSupport.page(page, size);
+        return ResponseEntity.ok(
+                stockService.history(inventoryId, pageable)
         );
     }
 

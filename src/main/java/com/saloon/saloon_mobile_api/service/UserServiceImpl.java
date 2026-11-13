@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 
 import java.time.LocalDateTime;
@@ -71,6 +72,13 @@ public class UserServiceImpl
     public List<UserResponse> getAllUsers() {
         List<User> userList=repo.findAll();
         return userList.stream().map(userMapper::toResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponse> getUsersPage(Pageable pageable) {
+        return repo.findAll(pageable)
+                .map(userMapper::toResponse)
+                .toList();
     }
 
 

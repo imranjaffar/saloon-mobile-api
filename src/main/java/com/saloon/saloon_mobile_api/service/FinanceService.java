@@ -11,6 +11,7 @@ import com.saloon.saloon_mobile_api.entity.InventoryTransaction;
 
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 
 
@@ -31,10 +32,12 @@ public interface FinanceService {
 
 
     List<IncomeResponse> getIncome();
+    List<IncomeResponse> getIncome(Pageable pageable);
 
 
 
     List<ExpenseResponse> getExpenses();
+    List<ExpenseResponse> getExpenses(Pageable pageable);
 
 
 

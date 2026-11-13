@@ -52,6 +52,12 @@ public class Attendance extends BaseEntity {
 
     private LocalDateTime checkOut;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "check_out_recorded_by_id")
+    private User checkOutRecordedBy;
+
+    @Column(name = "check_out_reason", length = 500)
+    private String checkOutReason;
 
 
     @Enumerated(EnumType.STRING)

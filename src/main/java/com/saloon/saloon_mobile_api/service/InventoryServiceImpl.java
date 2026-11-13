@@ -10,6 +10,7 @@ import com.saloon.saloon_mobile_api.mapper.InventoryMapper;
 import com.saloon.saloon_mobile_api.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -111,11 +112,40 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<InventoryResponse> getPage(Pageable pageable) {
+        return inventoryRepository.findByActiveTrue(pageable)
+                .map(inventoryMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InventoryResponse> getPage(
+            Pageable pageable,
+            String search,
+            boolean lowStockOnly
+    ) {
+        String query = search == null ? "" : search.trim();
+        return inventoryRepository.searchActivePage(query, lowStockOnly, pageable)
+                .map(inventoryMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<InventoryResponse> getLowStock() {
 
         return inventoryMapper.toResponseList(
                 inventoryRepository.findLowStockItems()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InventoryResponse> getLowStock(Pageable pageable) {
+        return inventoryRepository.findLowStockItems(pageable)
+                .map(inventoryMapper::toResponse)
+                .toList();
     }
 
     @Override

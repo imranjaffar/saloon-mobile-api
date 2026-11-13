@@ -55,8 +55,6 @@ public class SecurityConfig {
             "/appointments/**",
             "/services/**",
 
-            "/attendances/**",
-
             "/dashboard/**"
 
     };
@@ -87,6 +85,42 @@ public class SecurityConfig {
                         "/customers/**",
                         "/employees/**",
                         "/inventory/**"
+                ).hasAuthority(ADMIN)
+
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/attendances/check-in",
+                        "/attendances/check-out",
+                        "/attendances/corrections"
+                ).hasAuthority(EMPLOYEE)
+
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/attendances/getEmployeeAttendance",
+                        "/attendances/getEmployeeAttendance/page",
+                        "/attendances/corrections/mine",
+                        "/attendances/corrections/mine/page"
+                ).hasAuthority(EMPLOYEE)
+
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/attendances/today",
+                        "/attendances/today/page",
+                        "/attendances/date",
+                        "/attendances/date/page",
+                        "/attendances/employee/*",
+                        "/attendances/employee/*/page",
+                        "/attendances/corrections/pending",
+                        "/attendances/corrections/pending/page",
+                        "/attendances/corrections/history",
+                        "/attendances/corrections/history/page"
+                ).hasAuthority(ADMIN)
+
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/attendances/*/check-out",
+                        "/attendances/corrections/*/approve",
+                        "/attendances/corrections/*/reject"
                 ).hasAuthority(ADMIN)
 
                 // Admin modules

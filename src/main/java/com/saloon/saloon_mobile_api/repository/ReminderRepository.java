@@ -3,6 +3,8 @@ package com.saloon.saloon_mobile_api.repository;
 import com.saloon.saloon_mobile_api.entity.Reminder;
 import com.saloon.saloon_mobile_api.entity.ReminderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +15,7 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
      * Pending reminders
      */
     List<Reminder> findByStatus(ReminderStatus status);
+    Page<Reminder> findByStatus(ReminderStatus status, Pageable pageable);
 
     /**
      * Today's reminders

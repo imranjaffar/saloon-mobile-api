@@ -5,6 +5,8 @@ import com.saloon.saloon_mobile_api.dto.ReminderResponse;
 import com.saloon.saloon_mobile_api.service.ReminderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import com.saloon.saloon_mobile_api.utility.PaginationSupport;
 
 import java.util.List;
 
@@ -36,6 +38,14 @@ public class ReminderController {
     @GetMapping("/pending")
     public List<ReminderResponse> getPending() {
         return service.getPending();
+    }
+
+    @GetMapping("/pending/page")
+    public List<ReminderResponse> getPendingPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PaginationSupport.page(page, size);
+        return service.getPending(pageable);
     }
 
     @GetMapping("/customer/{customerId}")

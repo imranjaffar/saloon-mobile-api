@@ -9,6 +9,7 @@ import com.saloon.saloon_mobile_api.repository.ReminderRepository;
 import com.saloon.saloon_mobile_api.repository.SalonServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -79,6 +80,15 @@ public class ReminderService {
     public List<ReminderResponse> getPending() {
         return reminderRepository.findByStatus(ReminderStatus.PENDING)
                 .stream()
+                .map(this::map)
+                .toList();
+    }
+
+    public List<ReminderResponse> getPending(Pageable pageable) {
+        return reminderRepository.findByStatus(
+                        ReminderStatus.PENDING,
+                        pageable
+                )
                 .map(this::map)
                 .toList();
     }

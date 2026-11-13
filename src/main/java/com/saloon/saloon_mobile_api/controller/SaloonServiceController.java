@@ -8,6 +8,8 @@ import com.saloon.saloon_mobile_api.entity.Services;
 import com.saloon.saloon_mobile_api.service.SaloonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import com.saloon.saloon_mobile_api.utility.PaginationSupport;
 import com.saloon.saloon_mobile_api.dto.ExpenseRequest;
 import com.saloon.saloon_mobile_api.dto.IncomeRequest;
 import com.saloon.saloon_mobile_api.entity.Expense;
@@ -61,6 +63,14 @@ public class SaloonServiceController {
 
         return service.getAll();
 
+    }
+
+    @GetMapping("/page")
+    public List<ServiceResponse> getPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PaginationSupport.page(page, size);
+        return service.getPage(pageable);
     }
 
 

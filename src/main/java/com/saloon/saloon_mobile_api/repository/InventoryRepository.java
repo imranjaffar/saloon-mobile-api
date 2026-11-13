@@ -4,7 +4,10 @@ import com.saloon.saloon_mobile_api.entity.InventoryCategory;
 import com.saloon.saloon_mobile_api.entity.InventoryItem;
 import com.saloon.saloon_mobile_api.entity.Unit;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -19,6 +22,39 @@ public interface InventoryRepository
      * Active Inventory
      */
     List<InventoryItem> findByActiveTrue();
+    Page<InventoryItem> findByActiveTrue(Pageable pageable);
+
+    @Query(
+            value = """
+                SELECT i
+                FROM InventoryItem i
+                WHERE i.active = true
+                  AND (:lowStockOnly = false
+                       OR i.availableQuantity <= i.minimumQuantity)
+                  AND (
+                       :search = ''
+                       OR LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                       OR LOWER(COALESCE(i.brand, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+                  )
+                """,
+            countQuery = """
+                SELECT COUNT(i)
+                FROM InventoryItem i
+                WHERE i.active = true
+                  AND (:lowStockOnly = false
+                       OR i.availableQuantity <= i.minimumQuantity)
+                  AND (
+                       :search = ''
+                       OR LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                       OR LOWER(COALESCE(i.brand, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+                  )
+                """
+    )
+    Page<InventoryItem> searchActivePage(
+            @Param("search") String search,
+            @Param("lowStockOnly") boolean lowStockOnly,
+            Pageable pageable
+    );
 
     /**
      * Search by Name
@@ -64,6 +100,21 @@ public interface InventoryRepository
           AND i.availableQuantity <= i.minimumQuantity
         """)
     List<InventoryItem> findLowStockItems();
+    @Query(
+            value = """
+                SELECT i
+                FROM InventoryItem i
+                WHERE i.active = true
+                  AND i.availableQuantity <= i.minimumQuantity
+                """,
+            countQuery = """
+                SELECT COUNT(i)
+                FROM InventoryItem i
+                WHERE i.active = true
+                  AND i.availableQuantity <= i.minimumQuantity
+                """
+    )
+    Page<InventoryItem> findLowStockItems(Pageable pageable);
 
     /**
      * Available Quantity <= value

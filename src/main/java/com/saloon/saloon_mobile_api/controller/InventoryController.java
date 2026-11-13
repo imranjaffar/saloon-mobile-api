@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import com.saloon.saloon_mobile_api.utility.PaginationSupport;
 
 import java.util.List;
 
@@ -41,6 +43,18 @@ public class InventoryController {
         );
     }
 
+    @GetMapping("/page")
+    public ResponseEntity<List<InventoryResponse>> getPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "false") boolean lowStockOnly) {
+        Pageable pageable = PaginationSupport.page(page, size);
+        return ResponseEntity.ok(
+                inventoryService.getPage(pageable, search, lowStockOnly)
+        );
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<InventoryResponse> getById(
@@ -57,6 +71,17 @@ public class InventoryController {
 
         return ResponseEntity.ok(
                 inventoryService.getLowStock()
+        );
+    }
+
+    @GetMapping("/low-stock/page")
+    public ResponseEntity<List<InventoryResponse>> lowStockPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(
+                inventoryService.getLowStock(
+                        PaginationSupport.page(page, size)
+                )
         );
     }
 

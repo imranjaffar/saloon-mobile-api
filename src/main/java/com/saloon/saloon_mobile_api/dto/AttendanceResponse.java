@@ -22,6 +22,8 @@ public class AttendanceResponse {
 
     private LocalDateTime checkIn;
     private LocalDateTime checkOut;
+    private String checkOutRecordedByName;
+    private String checkOutReason;
 
     private String status;
 }
