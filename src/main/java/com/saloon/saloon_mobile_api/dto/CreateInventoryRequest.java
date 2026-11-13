@@ -38,4 +38,23 @@ public class CreateInventoryRequest {
 
     @Size(max = 500, message = "Remarks cannot exceed 500 characters.")
     private String remarks;
+
+    @Size(max = 100, message = "Package name cannot exceed 100 characters.")
+    private String packageName;
+
+    @Positive(message = "Units per package must be greater than zero.")
+    private BigDecimal unitsPerPackage;
+
+    @AssertTrue(message = "Package name and unitsPerPackage must be supplied together, and unitsPerPackage must be greater than zero.")
+    public boolean isPackageConfigurationValid() {
+        boolean hasPackageName = packageName != null && !packageName.trim().isEmpty();
+        boolean hasUnitsPerPackage = unitsPerPackage != null;
+
+        if (!hasPackageName && !hasUnitsPerPackage) {
+            return true;
+        }
+
+        return hasPackageName && hasUnitsPerPackage && unitsPerPackage.compareTo(BigDecimal.ZERO) > 0;
+    }
+
 }

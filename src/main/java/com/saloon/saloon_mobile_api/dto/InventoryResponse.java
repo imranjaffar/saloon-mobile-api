@@ -79,4 +79,8 @@ public class InventoryResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String packageName;
+    private BigDecimal unitsPerPackage;
+
 }

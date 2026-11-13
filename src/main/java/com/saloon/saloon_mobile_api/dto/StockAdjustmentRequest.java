@@ -7,22 +7,19 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-
 @Getter
 @Setter
 public class StockAdjustmentRequest {
 
-
     @NotNull
     private Long inventoryId;
 
-
-    @PositiveOrZero
+    @NotNull(message = "New quantity is required.")
+    @PositiveOrZero(message = "New quantity cannot be negative.")
     private BigDecimal newQuantity;
 
-    @NotNull
+    @NotNull(message = "Quantity mode is required.")
     private QuantityMode quantityMode;
-
 
     private String reason;
 }

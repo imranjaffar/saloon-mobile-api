@@ -2,6 +2,8 @@ package com.saloon.saloon_mobile_api.dto;
 
 import com.saloon.saloon_mobile_api.entity.InventoryCategory;
 import com.saloon.saloon_mobile_api.entity.Unit;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -37,4 +39,23 @@ public class UpdateInventoryRequest {
     private String remarks;
 
     private Boolean active;
+
+    @Size(max = 100, message = "Package name cannot exceed 100 characters.")
+    private String packageName;
+
+    @Positive(message = "Units per package must be greater than zero.")
+    private BigDecimal unitsPerPackage;
+
+    @AssertTrue(message = "Package name and unitsPerPackage must be supplied together, and unitsPerPackage must be greater than zero.")
+    public boolean isPackageConfigurationValid() {
+        boolean hasPackageName = packageName != null && !packageName.trim().isEmpty();
+        boolean hasUnitsPerPackage = unitsPerPackage != null;
+
+        if (!hasPackageName && !hasUnitsPerPackage) {
+            return true;
+        }
+
+        return hasPackageName && hasUnitsPerPackage && unitsPerPackage.compareTo(BigDecimal.ZERO) > 0;
+    }
+
 }
