@@ -55,8 +55,6 @@ public class SecurityConfig {
             "/appointments/**",
             "/services/**",
 
-            "/attendances/**",
-
             "/dashboard/**"
 
     };
@@ -87,6 +85,35 @@ public class SecurityConfig {
                         "/customers/**",
                         "/employees/**",
                         "/inventory/**"
+                ).hasAuthority(ADMIN)
+
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/attendances/check-in",
+                        "/attendances/check-out",
+                        "/attendances/corrections"
+                ).hasAuthority(EMPLOYEE)
+
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/attendances/getEmployeeAttendance",
+                        "/attendances/corrections/mine"
+                ).hasAuthority(EMPLOYEE)
+
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/attendances/today",
+                        "/attendances/date",
+                        "/attendances/employee/*",
+                        "/attendances/corrections/pending",
+                        "/attendances/corrections/history"
+                ).hasAuthority(ADMIN)
+
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/attendances/*/check-out",
+                        "/attendances/corrections/*/approve",
+                        "/attendances/corrections/*/reject"
                 ).hasAuthority(ADMIN)
 
                 // Admin modules

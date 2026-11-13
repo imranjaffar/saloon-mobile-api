@@ -4,7 +4,6 @@ package com.saloon.saloon_mobile_api.service;
 
 import com.saloon.saloon_mobile_api.dto.AttendanceRequest;
 import com.saloon.saloon_mobile_api.dto.AttendanceResponse;
-import com.saloon.saloon_mobile_api.entity.Attendance;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,11 +14,13 @@ public interface AttendanceService {
 
     List<AttendanceResponse> getMyAttendance(String username);
 
-    AttendanceResponse checkIn(Long employeeId);
-
     AttendanceResponse checkIn(String userName);
 
-    AttendanceResponse checkOut(Long employeeId);
+    AttendanceResponse checkOut(
+            Long employeeId,
+            String userName,
+            String reason
+    );
 
     AttendanceResponse markAttendance(
             AttendanceRequest request

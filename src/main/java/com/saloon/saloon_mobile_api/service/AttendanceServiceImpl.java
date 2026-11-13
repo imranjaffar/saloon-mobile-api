@@ -58,6 +58,8 @@ public class AttendanceServiceImpl
         }
 
         attendance.setCheckOut(LocalDateTime.now());
+        attendance.setCheckOutRecordedBy(user);
+        attendance.setCheckOutReason(null);
 
         Attendance saved = attendanceRepository.save(attendance);
 
@@ -82,35 +84,6 @@ public class AttendanceServiceImpl
                 .toList();
     }
 
-
-    @Override
-    public AttendanceResponse checkIn(Long employeeId) {
-
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() ->
-                        new RuntimeException("Employee not found"));
-
-        LocalDate today = LocalDate.now();
-
-        Attendance attendance = attendanceRepository
-                .findByEmployeeAndAttendanceDate(employee, today)
-                .orElse(null);
-
-        if (attendance != null && attendance.getCheckIn() != null) {
-            throw new RuntimeException("Already checked in");
-        }
-
-        if (attendance == null) {
-            attendance = new Attendance();
-            attendance.setEmployee(employee);
-            attendance.setAttendanceDate(today);
-        }
-
-        attendance.setCheckIn(LocalDateTime.now());
-        attendance.setStatus(AttendanceStatus.PRESENT);
-
-        return mapper.toResponse(attendanceRepository.save(attendance));
-    }
 
     @Override
     public AttendanceResponse checkIn(String userName) {
@@ -189,8 +162,23 @@ public class AttendanceServiceImpl
 
 
     @Override
-    public AttendanceResponse checkOut(Long employeeId) {
+    public AttendanceResponse checkOut(
+            Long employeeId,
+            String userName,
+            String reason
+    ) {
 
+        String checkOutReason = reason == null ? "" : reason.trim();
+        if (checkOutReason.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "A reason is required for an admin-recorded checkout."
+            );
+        }
+        if (checkOutReason.length() > 500) {
+            throw new IllegalArgumentException(
+                    "Reason must be 500 characters or fewer."
+            );
+        }
 
         Employee employee =
                 employeeRepository.findById(employeeId)
@@ -229,8 +217,11 @@ public class AttendanceServiceImpl
                 LocalDateTime.now()
         );
 
-
-
+        User admin = userRepo.findByName(userName)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+        attendance.setCheckOutRecordedBy(admin);
+        attendance.setCheckOutReason(checkOutReason);
 
         Attendance updatedAttendance= attendanceRepository.save(attendance);
 

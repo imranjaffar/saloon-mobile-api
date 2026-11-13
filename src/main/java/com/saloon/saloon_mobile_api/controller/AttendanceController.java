@@ -1,6 +1,11 @@
 package com.saloon.saloon_mobile_api.controller;
 
 import com.saloon.saloon_mobile_api.dto.AttendanceResponse;
+import com.saloon.saloon_mobile_api.dto.AdminAttendanceCheckOutRequest;
+import com.saloon.saloon_mobile_api.dto.AttendanceCorrectionRequest;
+import com.saloon.saloon_mobile_api.dto.AttendanceCorrectionResponse;
+import com.saloon.saloon_mobile_api.dto.AttendanceCorrectionReviewRequest;
+import com.saloon.saloon_mobile_api.service.AttendanceCorrectionService;
 import com.saloon.saloon_mobile_api.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,6 +22,7 @@ import java.util.List;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+    private final AttendanceCorrectionService correctionService;
 
     // =====================================
     // EMPLOYEE SELF CHECK-IN
@@ -43,25 +49,69 @@ public class AttendanceController {
     }
 
     // =====================================
-    // Admin CHECK-IN
-    // POST /attendances/{employeeId}/check-in
-    // =====================================
-    @PostMapping("/{employeeId}/check-in")
-    public AttendanceResponse adminCheckIn(
-            @PathVariable Long employeeId) {
-
-        return attendanceService.checkIn(employeeId);
-    }
-
-    // =====================================
     // Admin CHECK-OUT
     // POST /attendances/{employeeId}/check-out
     // =====================================
     @PostMapping("/{employeeId}/check-out")
     public AttendanceResponse adminCheckOut(
-            @PathVariable Long employeeId) {
+            @PathVariable Long employeeId,
+            @RequestBody AdminAttendanceCheckOutRequest request,
+            Authentication authentication) {
 
-        return attendanceService.checkOut(employeeId);
+        return attendanceService.checkOut(
+                employeeId,
+                authentication.getName(),
+                request == null ? null : request.getReason()
+        );
+    }
+
+    @PostMapping("/corrections")
+    public AttendanceCorrectionResponse requestCorrection(
+            @RequestBody AttendanceCorrectionRequest request,
+            Authentication authentication) {
+        return correctionService.request(authentication.getName(), request);
+    }
+
+    @GetMapping("/corrections/mine")
+    public List<AttendanceCorrectionResponse> myCorrectionRequests(
+            Authentication authentication) {
+        return correctionService.getMyRequests(authentication.getName());
+    }
+
+    @GetMapping("/corrections/pending")
+    public List<AttendanceCorrectionResponse> pendingCorrectionRequests() {
+        return correctionService.getPendingRequests();
+    }
+
+    @GetMapping("/corrections/history")
+    public List<AttendanceCorrectionResponse> correctionHistory() {
+        return correctionService.getHistory();
+    }
+
+    @PostMapping("/corrections/{correctionId}/approve")
+    public AttendanceCorrectionResponse approveCorrection(
+            @PathVariable Long correctionId,
+            @RequestBody(required = false)
+            AttendanceCorrectionReviewRequest request,
+            Authentication authentication) {
+        return correctionService.approve(
+                correctionId,
+                authentication.getName(),
+                request == null ? null : request.getReviewNote()
+        );
+    }
+
+    @PostMapping("/corrections/{correctionId}/reject")
+    public AttendanceCorrectionResponse rejectCorrection(
+            @PathVariable Long correctionId,
+            @RequestBody(required = false)
+            AttendanceCorrectionReviewRequest request,
+            Authentication authentication) {
+        return correctionService.reject(
+                correctionId,
+                authentication.getName(),
+                request == null ? null : request.getReviewNote()
+        );
     }
 
     // =====================================
