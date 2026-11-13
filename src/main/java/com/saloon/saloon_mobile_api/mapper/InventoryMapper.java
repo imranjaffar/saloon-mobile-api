@@ -44,6 +44,9 @@ public class InventoryMapper {
         response.setSupplierName(item.getSupplierName());
 
         response.setRemarks(item.getRemarks());
+        response.setPackageName(item.getPackageName());
+        response.setUnitsPerPackage(item.getUnitsPerPackage());
+
 
         response.setActive(Boolean.TRUE.equals(item.getActive()));
 

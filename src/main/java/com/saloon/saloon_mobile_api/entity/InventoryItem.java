@@ -88,6 +88,15 @@ public class InventoryItem {
     @Column(precision = 12, scale = 2)
     private BigDecimal sellingPrice;
 
+
+
+    @Column(name = "package_name", length = 100)
+    private String packageName;
+
+    @Column(name = "units_per_package", precision = 19, scale = 3)
+    private BigDecimal unitsPerPackage;
+
+
     /**
      * Supplier Name
      * (No Supplier table)
@@ -110,4 +119,14 @@ public class InventoryItem {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+
+    public boolean hasPackageConfiguration() {
+        return packageName != null
+                && !packageName.trim().isEmpty()
+                && unitsPerPackage != null
+                && unitsPerPackage.compareTo(BigDecimal.ZERO) > 0;
+    }
 }
+
+
