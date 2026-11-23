@@ -93,6 +93,15 @@ public class ReminderService {
                 .toList();
     }
 
+    public List<ReminderResponse> getHistory(Pageable pageable) {
+        return reminderRepository.findByStatusNot(
+                        ReminderStatus.PENDING,
+                        pageable
+                )
+                .map(this::map)
+                .toList();
+    }
+
     public List<ReminderResponse> getCustomer(Long customerId) {
         return reminderRepository.findByCustomerId(customerId)
                 .stream()

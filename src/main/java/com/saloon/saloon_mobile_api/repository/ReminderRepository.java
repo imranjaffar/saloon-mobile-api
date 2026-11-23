@@ -16,6 +16,7 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
      */
     List<Reminder> findByStatus(ReminderStatus status);
     Page<Reminder> findByStatus(ReminderStatus status, Pageable pageable);
+    Page<Reminder> findByStatusNot(ReminderStatus status, Pageable pageable);
 
     /**
      * Today's reminders

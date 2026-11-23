@@ -48,6 +48,14 @@ public class ReminderController {
         return service.getPending(pageable);
     }
 
+    @GetMapping("/history/page")
+    public List<ReminderResponse> getHistoryPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PaginationSupport.page(page, size);
+        return service.getHistory(pageable);
+    }
+
     @GetMapping("/customer/{customerId}")
     public List<ReminderResponse> getCustomer(
             @PathVariable Long customerId) {
